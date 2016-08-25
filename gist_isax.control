@@ -1,0 +1,4 @@
+# gisax extension
+comment = 'Implementation of iSAX time-series indexing within GiST'
+default_version = '1.0'
+relocatable = true
