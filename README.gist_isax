@@ -25,3 +25,9 @@ set_limit(0.5);
 SELECT *
 FROM my_data
 WHERE signal % reference;
+
+Here the '%' operator selects only instances of signal that have a Euclidean distance to reference of no more than the specified limit (in this case, of 0.5).
+
+The iSAX paper gives an equation for the lower-bound Euclidean distance between the PAA representation of a time series and the iSAX representation of another: MINDIST_PAA_iSAX. This is pivotal to the use of an iSAX index for the '%' operator. You should assume that all time series are of the same length, but you are invited to consider how to deal with other situations.
+
+The index leaf-level entries should contain an iSAX representation of the time series data. The iSAX representation depends upon a given word length (w) and cardinality (alpha). An iSAX signal can be lossily compressed to a lower cardinality.
