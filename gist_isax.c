@@ -2,6 +2,9 @@
 /* Array handling functions */
 #include "utils/array.h"
 #include "catalog/pg_type.h"
+#include "utils/builtins.h"
+#include "utils/guc.h"
+#include "fmgr.h"
 #include "gist_isax.h"
 #include <float.h>
 
@@ -10,11 +13,12 @@
  * function-call interface. See http://doxygen.postgresql.org/fmgr_8h_source.html
  */
  
-#ifdef PG_MODULE_MAGIC
 PG_MODULE_MAGIC;
-#endif
 
-#define ATTR_IS_FLOAT4(typid) typid == FLOAT4OID 
+static inline bool
+ATTR_IS_FLOAT4(Oid typid) {
+ return typid == FLOAT4OID;
+} 
 
 /*
  * GUC variables
@@ -26,7 +30,7 @@ void _PG_INIT(void);
 /*
  * Module load callback - called immediately after loading file
  */
-void_PG_INIT(void)
+void _PG_INIT(void)
 {
 	/* Define custom GUC variables
 	 * see http://doxygen.postgresql.org/guc_8h_source.html
@@ -84,7 +88,7 @@ check_ndims(int ndims1, int ndims2)
 }
 
 static void
-check_nitems(nitems1, nitems2)
+check_nitems(int nitems1, int nitems2)
 {
 		if(nitems1 != nitems2)
 		{
@@ -119,15 +123,12 @@ arrays_similar(PG_FUNCTION_ARGS)
 		int					*dims2,
 								ndims2,
 								nitems2;
-		int					i;
-		char	   		*dat1,
-								*dat2;
 		Oid					element_type1;
 		Oid					element_type2;
 		bool 				is_similar = true;
 	
 		/* Can't do anything with null arrays */
-		if (PG_ARGISNULL(0) || (PG_ARGISNULL(1))
+		if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
 		{
 			PG_RETURN_NULL();
 		}
@@ -181,15 +182,12 @@ array_dist(PG_FUNCTION_ARGS)
 		int					*dims2,
 								ndims2,
 								nitems2;
-		int					i;
-		char	   		*dat1,
-								*dat2;
 		Oid					element_type1;
 		Oid					element_type2;
 		float4			distance = 0;
 	
 		/* Can't do anything with null arrays */
-		if (PG_ARGISNULL(0) || (PG_ARGISNULL(1))
+		if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
 		{
 			PG_RETURN_NULL();
 		}
