@@ -1,4 +1,10 @@
 CREATE EXTENSION gist_isax;
 SHOW gist_isax.distance_threshold;
-SET gist_isax.distance_threshold=0.1;
+SET gist_isax.distance_threshold TO 0.1;
 SHOW gist_isax.distance_threshold;
+SELECT array_dist('{1.0,1.0,1.0,1.0}'::real[], '{2.0,2.0,2.0,2.0}'::real[]);
+SELECT array_dist('{1.0,1.0,1.0,1.0}'::real[], '{1.0,1.0,1.0,1.0}'::real[]);
+SELECT arrays_similar('{1.0,1.0,1.0,1.0}'::real[], '{2.0,2.0,2.0,2.0}'::real[]);
+SELECT arrays_similar('{1.0,1.0,1.0,1.0}'::real[], '{2.0,2.0,2.0,2.0}'::real[]);
+SELECT '{1.0,1.0,1.0,1.0}'::real[] % '{2.0,2.0,2.0,2.0}'::real[];
+SELECT '{1.0,1.0,1.0,1.0}'::real[] % '{1.0,1.0,1.0,1.0}'::real[];

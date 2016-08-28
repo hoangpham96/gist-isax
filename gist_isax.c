@@ -25,12 +25,12 @@ ATTR_IS_FLOAT4(Oid typid) {
  */
 double distance_threshold = 0.5f;
 
-void _PG_INIT(void);
+void _PG_init(void);
 
 /*
  * Module load callback - called immediately after loading file
  */
-void _PG_INIT(void)
+void _PG_init(void)
 {
 	/* Define custom GUC variables
 	 * see http://doxygen.postgresql.org/guc_8h_source.html
