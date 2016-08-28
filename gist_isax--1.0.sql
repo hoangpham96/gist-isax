@@ -6,12 +6,16 @@ RETURNS real
 AS 'MODULE_PATHNAME'
 LANGUAGE C STRICT;
 
--- CREATE FUNCTION arrays_similar(anyarray, anyarray)
--- RETURNS bool
--- AS 'MODULE_PATHNAME'
--- LANGUAGE C STRICT;
+CREATE FUNCTION arrays_similar(anyarray, anyarray)
+RETURNS bool
+AS 'MODULE_PATHNAME'
+LANGUAGE C STRICT;
 
--- CREATE OPERATOR % (LEFTARG = anyarray, RIGHTARG = anyarray, PROCEDURE = arrays_similar);
+CREATE OPERATOR % (LEFTARG = anyarray, RIGHTARG = anyarray, PROCEDURE = arrays_similar);
+
+--
+-- GiST functions
+--
 
 -- CREATE OR REPLACE FUNCTION my_consistent(internal, data_type, smallint, oid, internal)
 -- RETURNS bool
