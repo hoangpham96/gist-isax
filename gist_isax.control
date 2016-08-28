@@ -1,4 +1,6 @@
 # gisax extension
 comment = 'Implementation of iSAX time-series indexing within GiST'
 default_version = '1.0'
+module_pathname = '$libdir/gist_isax'
 relocatable = true
+

@@ -1,0 +1,1 @@
+CREATE EXTENSION gist_isax;
