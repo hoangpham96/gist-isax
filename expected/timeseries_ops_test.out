@@ -1,0 +1,195 @@
+CREATE EXTENSION gist_isax;
+/*
+ * GUC parameters 
+ */
+-- Default value of 0.5 should be reachable via SHOW
+SHOW gist_isax.distance_threshold;
+ gist_isax.distance_threshold 
+------------------------------
+ 0.5
+(1 row)
+
+-- Shouldn't be able to set negative distances
+SET gist_isax.distance_threshold TO -0.1;
+ERROR:  -0.1 is outside the valid range for parameter "gist_isax.distance_threshold" (0 .. 1.79769e+308)
+SHOW gist_isax.distance_threshold;
+ gist_isax.distance_threshold 
+------------------------------
+ 0.5
+(1 row)
+
+-- Should be able to set threshold and see the updated value
+SET gist_isax.distance_threshold TO 0.1;
+SHOW gist_isax.distance_threshold;
+ gist_isax.distance_threshold 
+------------------------------
+ 0.1
+(1 row)
+
+/*
+ * array_dist function
+ */
+-- Don't allow comparisons between arrays of different lengths
+SELECT array_dist('{1.0,1.0,1.0,1.0}'::real[], '{2.0,2.0,2.0}'::real[]);
+ERROR:  arrays must be same length
+DETAIL:  Arrays with lengths 4 and 4 are not compatible for distance measurement.
+SELECT array_dist('{1.0,1.0,1.0}'::real[], '{2.0,2.0,2.0,2.0}'::real[]);
+ERROR:  arrays must be same length
+DETAIL:  Arrays with lengths 3 and 3 are not compatible for distance measurement.
+-- Comparisons involving NULLs should give result unknown 
+SELECT array_dist('{null,1.0,1.0,1.0}'::real[], '{2.0,2.0,2.0,2.0}'::real[]);
+ array_dist 
+------------
+           
+(1 row)
+
+SELECT array_dist(null::real[], '{2.0,2.0,2.0,2.0}'::real[]);
+ array_dist 
+------------
+           
+(1 row)
+
+SELECT array_dist('{1.0,1.0,1.0}'::real[], '{null,2.0,2.0,2.0}'::real[]);
+ array_dist 
+------------
+           
+(1 row)
+
+SELECT array_dist('{1.0,1.0,1.0}'::real[], null::real[]);
+ array_dist 
+------------
+           
+(1 row)
+
+-- sqrt((1 - 1)^2 + (1 - 1)^2 + (1 - 1)^2 + (1 - 1)^2) = 0.0 
+SELECT array_dist('{1.0,1.0,1.0,1.0}'::real[], '{1.0,1.0,1.0,1.0}'::real[]);
+ array_dist 
+------------
+          0
+(1 row)
+
+-- sqrt((1 - 2)^2 + (1 - 2)^2 + (1 - 2)^2 + (1 - 2)^2) = 2.0 
+SELECT array_dist('{1.0,1.0,1.0,1.0}'::real[], '{2.0,2.0,2.0,2.0}'::real[]);
+ array_dist 
+------------
+          2
+(1 row)
+
+-- distances should be symmetric
+SELECT array_dist('{2.0,2.0,2.0,2.0}'::real[], '{1.0,1.0,1.0,1.0}'::real[]);
+ array_dist 
+------------
+          2
+(1 row)
+
+-- Trivial distance 0.1 
+SELECT array_dist('{0,0,0}'::real[], '{0,0,0.1}'::real[]);
+ array_dist 
+------------
+        0.1
+(1 row)
+
+SELECT array_dist('{0,0,0.1}'::real[], '{0,0,0}'::real[]);
+ array_dist 
+------------
+        0.1
+(1 row)
+
+/*
+ * arrays_similar function
+ */
+SET gist_isax.distance_threshold TO 0.2;
+-- Comparisons involving NULLs should give result unknown 
+SELECT arrays_similar('{null,1.0,1.0,1.0}'::real[], '{2.0,2.0,2.0,2.0}'::real[]);
+ arrays_similar 
+----------------
+ 
+(1 row)
+
+SELECT arrays_similar(null::real[], '{2.0,2.0,2.0,2.0}'::real[]);
+ arrays_similar 
+----------------
+ 
+(1 row)
+
+SELECT arrays_similar('{1.0,1.0,1.0,1.0}'::real[], '{null,2.0,2.0,2.0}'::real[]);
+ arrays_similar 
+----------------
+ 
+(1 row)
+
+SELECT arrays_similar('{1.0,1.0,1.0,1.0}'::real[], null::real[]);
+ arrays_similar 
+----------------
+ 
+(1 row)
+
+-- sqrt((1 - 2)^2 + (1 - 2)^2 + (1 - 2)^2 + (1 - 2)^2) = 2.0 
+SELECT arrays_similar('{2.0,2.0,2.0,2.0}'::real[], '{1.0,1.0,1.0,1.0}'::real[]);
+ arrays_similar 
+----------------
+ f
+(1 row)
+
+-- Trivial distance 0.1 
+SELECT arrays_similar('{0,0,0}'::real[], '{0,0,0.1}'::real[]);
+ arrays_similar 
+----------------
+ t
+(1 row)
+
+SELECT arrays_similar('{0,0,0.1}'::real[], '{0,0,0}'::real[]);
+ arrays_similar 
+----------------
+ t
+(1 row)
+
+/*
+ * '%' array similarity operator
+ */
+SET gist_isax.distance_threshold TO 0.2;
+-- Comparisons involving NULLs should give result unknown 
+SELECT '{null,1.0,1.0,1.0}'::real[] % '{2.0,2.0,2.0,2.0}'::real[];
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT null::real[] % '{2.0,2.0,2.0,2.0}'::real[];
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT '{1.0,1.0,1.0,1.0}'::real[] % '{null,2.0,2.0,2.0}'::real[];
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT '{1.0,1.0,1.0,1.0}'::real[] % null::real[];
+ ?column? 
+----------
+ 
+(1 row)
+
+-- sqrt((1 - 2)^2 + (1 - 2)^2 + (1 - 2)^2 + (1 - 2)^2) = 2.0 
+SELECT '{2.0,2.0,2.0,2.0}'::real[] % '{1.0,1.0,1.0,1.0}'::real[];
+ ?column? 
+----------
+ f
+(1 row)
+
+-- Trivial distance 0.1 
+SELECT '{0,0,0}'::real[] % '{0,0,0.1}'::real[];
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT '{0,0,0.1}'::real[] % '{0,0,0}'::real[];
+ ?column? 
+----------
+ t
+(1 row)
+
