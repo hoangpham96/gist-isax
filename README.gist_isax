@@ -4,7 +4,7 @@ matches to a reference array.
 
 Install
 
-To install, call 'CREATE EXTENSION isax_gist'
+To install, call 'CREATE EXTENSION gist_isax'
 
 
 GUC Parameters
