@@ -1,0 +1,42 @@
+This is an implmentation of iSAX for GiST. It allows real (float) arrays to be searched to find
+matches to a reference array.
+
+
+Install
+
+To install, call 'CREATE EXTENSION isax_gist'
+
+
+GUC Parameters
+
+gist_isax.distance_threshold
+
+This controls the maximum Euclidean distance allowed between two similar arrays. You can check
+the current value with 'SHOW gist_isax.distance_threshold', and change it with 
+'SET gist_isax.distance_threshold'.
+
+
+Functions
+
+array_dist(float array, float array)
+
+Returns the Euclidean distance between two arrays. Both arrays must be of the same size (i.e., 
+have the same number of elements). If either array is null, or contains a null element, the 
+calculated distance will be null.
+
+arrays_similar(float array, float array)
+
+Returns true only when given two arrays with a Euclidean distance of no more than the specified 
+current distance threshold. Do not use this function in your WHERE clause if you wish to make use
+of indexing, but instead use the '%' operator.
+
+
+Operators
+
+float array % float array
+
+The '%' operator acts in the same was as `arrays_similar`, returning true only when the two arrays
+are within the threshold Euclidean distance of each other. Use this operator in your WHERE clause
+rather than `arrays_similar`, since indexes are bound to operators, not functions.
+
+
