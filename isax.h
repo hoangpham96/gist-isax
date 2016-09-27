@@ -17,7 +17,7 @@
  * This could allow variable-length words.
  */
 typedef struct ISAXELEM {
-  unsigned char lower;
+  unsigned char value;
   unsigned char cardinality;
 } ISAXELEM;
 
