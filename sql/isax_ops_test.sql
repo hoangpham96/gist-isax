@@ -11,3 +11,7 @@ INSERT INTO isax_elem_test(isaxvalue) VALUES ('2:255') RETURNING isaxvalue;
 INSERT INTO isax_elem_test(isaxvalue) VALUES ('1:256') RETURNING isaxvalue;
 
 INSERT INTO isax_elem_test(isaxvalue) VALUES ('1:257') RETURNING isaxvalue;
+
+CREATE TABLE isax_word_test (isaxword isax );
+
+INSERT INTO isax_word_test(isaxword) VALUES ('{1:1}') RETURNING isaxword;

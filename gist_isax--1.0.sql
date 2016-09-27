@@ -33,12 +33,22 @@ CREATE TYPE isaxelem (
         OUTPUT = isax_elem_out
 );
 
---CREATE TYPE isax (
---         ELEMENT = isaxelem,
---         INTERNALLENGTH = 16,
---        INPUT = array_in,
---        OUTPUT = array_out
---);
+CREATE FUNCTION isax_in(cstring)
+RETURNS isax
+AS 'MODULE_PATHNAME'
+LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION isax_out(isax)
+RETURNS cstring
+AS 'MODULE_PATHNAME'
+LANGUAGE C IMMUTABLE STRICT;
+
+CREATE TYPE isax (
+        INTERNALLENGTH = 16,
+        INPUT = isax_in,
+        OUTPUT = isax_out,
+        ELEMENT = isaxelem
+);
 
 --
 -- GiST functions
