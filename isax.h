@@ -11,24 +11,14 @@
 
 /*
  * Each iSAX element is a value with an associated cardinality
+ *
+ * An iSAX word is implemented as an array of iSAX elements, using the
+ * internal array representation (the ubiquitous varlena structure).
+ * This could allow variable-length words.
  */
 typedef struct ISAXELEM {
   unsigned char lower;
   unsigned char cardinality;
 } ISAXELEM;
-
-/*
- * An iSAX word is based upon the ubiquitous varlena structure.
- * This could allow variable-length words.
- */
-typedef struct ISAXWORD
-{
-  int32      vl_len_;
-  char   data[FLEXIBLE_ARRAY_MEMBER];
-} ISAXWORD;
-
-#define ISAXHDRSIZE	(VARHDRSZ)
-#define GETARR(x)		( (ISAXELEM*)( (char*)x+ISAXHDRSIZE ) )
-#define ARRNELEM(x) ( ( VARSIZE(x) - ISAXHDRSIZE )/sizeof(ISAXELEM) )
 
 #endif /* __ISAX_H__ */

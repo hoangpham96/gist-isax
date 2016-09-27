@@ -1,7 +1,7 @@
 #include "postgres.h"
 #include "access/gist.h"
-#include "gist_isax.h"
 #include "isax.h"
+#include "isax_gist.h"
 
 /**
  * GiST functions to be implemented

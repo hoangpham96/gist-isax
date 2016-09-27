@@ -17,20 +17,27 @@ CREATE OPERATOR % (LEFTARG = anyarray, RIGHTARG = anyarray, PROCEDURE = arrays_s
 -- iSAX type (for GiST keys)
 --
 
---CREATE FUNCTION isax_in(cstring)
---RETURNS isax
---AS 'MODULE_PATHNAME'
---LANGUAGE C STRICT;
---
---CREATE FUNCTION isax_out(isax)
---RETURNS cstring
---AS 'MODULE_PATHNAME'
---LANGUAGE C STRICT;
---
+CREATE FUNCTION isax_elem_in(cstring)
+RETURNS isaxelem
+AS 'MODULE_PATHNAME'
+LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION isax_elem_out(isaxelem)
+RETURNS cstring
+AS 'MODULE_PATHNAME'
+LANGUAGE C IMMUTABLE STRICT;
+
+CREATE TYPE isaxelem (
+        INTERNALLENGTH = 2,
+        INPUT = isax_elem_in,
+        OUTPUT = isax_elem_out
+);
+
 --CREATE TYPE isax (
---        INTERNALLENGTH = -1,
---        INPUT = isax_in,
---        OUTPUT = isax_out
+--         ELEMENT = isaxelem,
+--         INTERNALLENGTH = 16,
+--        INPUT = array_in,
+--        OUTPUT = array_out
 --);
 
 --
@@ -88,4 +95,4 @@ CREATE OPERATOR % (LEFTARG = anyarray, RIGHTARG = anyarray, PROCEDURE = arrays_s
 --        FUNCTION        5       gist_isax_penalty (internal, internal, internal),
 --        FUNCTION        6       gist_isax_picksplit (internal, internal),
 --        FUNCTION        7       gist_isax_same (isax, isax, internal),
---STORAGE isax;
+--STORAGE isax_;
