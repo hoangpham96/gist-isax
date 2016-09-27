@@ -3,5 +3,6 @@ results
 *.so
 regression.diffs
 regression.out
-/.cproject
-/.project
+.cproject
+.project
+.settings
