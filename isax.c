@@ -61,9 +61,10 @@ Datum
 isax_in(PG_FUNCTION_ARGS)
 {
     char *pch;
-	char *token, *last;
+	char *token, *str2;
 	ISAXWORD * result;
 	ISAXELEM* elements;
+	size_t len;
 	int i;
     char       *str = PG_GETARG_CSTRING(0);
     if(*str!='{')
@@ -83,15 +84,17 @@ isax_in(PG_FUNCTION_ARGS)
                  errmsg("iSAX word has content after '}' delimiter: \"%s\"",
                         str)));
 
-    size_t len = pch-(str+1);
-    char *str2 = palloc(len+1);
+    len = pch-str-1;
+    str2 = palloc(len+1);
     strncpy(str2,str+1,len);
+    *(str2+len) = '\0';
+	elog(NOTICE, "read isax element \"%s\" to \"%s\"", str, str2);
 
 	result = (ISAXWORD *) palloc(sizeof(ISAXWORD));
 	elements = result->elements;
 	i=0;
-	++pch;
-	while ((token = strsep(&pch, ",}"))) {
+	pch = str2;
+	while ((token = strsep(&pch, ","))) {
 		if(i==ISAXWORDLENGTH)
 	        ereport(ERROR,
 	                (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
