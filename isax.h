@@ -9,6 +9,9 @@
 #ifndef __ISAX_H__
 #define __ISAX_H__
 
+#define MAXSAXBITS 8
+#define MAXSAXCARDINALITY 256
+
 /*
  * Each iSAX element is a value with an associated cardinality
  *
@@ -18,7 +21,7 @@
  */
 typedef struct ISAXELEM {
   unsigned char value;
-  unsigned char cardinality;
+  unsigned char validbits;
 } ISAXELEM;
 
 #endif /* __ISAX_H__ */

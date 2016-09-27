@@ -1,4 +1,13 @@
-CREATE TABLE isax_elem_test (id INTEGER PRIMARY KEY, isaxvalue isaxelem);
+CREATE TABLE isax_elem_test (isaxvalue isaxelem);
 
-INSERT INTO isax_elem_test VALUES (1, '1:1');
-SELECT isaxvalue FROM isax_elem_test WHERE id=1;
+INSERT INTO isax_elem_test(isaxvalue) VALUES ('1:1') RETURNING isaxvalue;
+
+INSERT INTO isax_elem_test(isaxvalue) VALUES ('1:2') RETURNING isaxvalue;
+
+INSERT INTO isax_elem_test(isaxvalue) VALUES ('2:1') RETURNING isaxvalue;
+
+INSERT INTO isax_elem_test(isaxvalue) VALUES ('2:255') RETURNING isaxvalue;
+
+INSERT INTO isax_elem_test(isaxvalue) VALUES ('1:256') RETURNING isaxvalue;
+
+INSERT INTO isax_elem_test(isaxvalue) VALUES ('1:257') RETURNING isaxvalue;
