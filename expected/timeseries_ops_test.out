@@ -32,10 +32,10 @@ SHOW gist_isax.distance_threshold;
 -- Don't allow comparisons between arrays of different lengths
 SELECT array_dist('{1.0,1.0,1.0,1.0}'::real[], '{2.0,2.0,2.0}'::real[]);
 ERROR:  arrays must be same length
-DETAIL:  Arrays with lengths 4 and 4 are not compatible for distance measurement.
+DETAIL:  Arrays with lengths 4 and 3 are not compatible for distance measurement.
 SELECT array_dist('{1.0,1.0,1.0}'::real[], '{2.0,2.0,2.0,2.0}'::real[]);
 ERROR:  arrays must be same length
-DETAIL:  Arrays with lengths 3 and 3 are not compatible for distance measurement.
+DETAIL:  Arrays with lengths 3 and 4 are not compatible for distance measurement.
 -- Comparisons involving NULLs should give result unknown 
 SELECT array_dist('{null,1.0,1.0,1.0}'::real[], '{2.0,2.0,2.0,2.0}'::real[]);
  array_dist 

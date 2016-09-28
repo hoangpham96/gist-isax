@@ -7,13 +7,15 @@
 #include "fmgr.h"
 #include "timeseries.h"
 #include <float.h>
-
+#include <math.h>
 /*
  * The functions here are written to conform with the Postgres function manager and
  * function-call interface. See http://doxygen.postgresql.org/fmgr_8h_source.html
  */
 
 PG_MODULE_MAGIC;
+
+#define ARRPTR(x)  ( (float4 *) ARR_DATA_PTR(x) )
 
 static inline bool
 ATTR_IS_FLOAT4(Oid typid) {
@@ -98,7 +100,7 @@ check_nitems(int nitems1, int nitems2)
 						 errmsg("arrays must be same length"),
 						 errdetail("Arrays with lengths %d and %d are not "
 						  "compatible for distance measurement.",
-							nitems1, nitems1)));
+							nitems1, nitems2)));
 		}
 }
 
@@ -186,7 +188,10 @@ array_dist(PG_FUNCTION_ARGS)
 		Oid					element_type1;
 		Oid					element_type2;
 		float4			distance = 0;
-
+		int i;
+		float4 *val1, *val2;
+		float4 delta;
+	
 		/* Can't do anything with null arrays */
 		if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
 		{
@@ -222,7 +227,15 @@ array_dist(PG_FUNCTION_ARGS)
 		/*
 		 * TODO: Implement checks
 		 */
+		val1 = ARRPTR(v1);
+		val2 = ARRPTR(v2);
+		for(i=0; i<nitems1; i++)
+		{
+			delta = *val2 - *val1;
+			distance += delta * delta;
+			val1++;
+			val2++;
+		} 
 
-
-	PG_RETURN_FLOAT4(distance);
+	PG_RETURN_FLOAT4(sqrt(distance));
 }
