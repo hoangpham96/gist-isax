@@ -129,6 +129,10 @@ arrays_similar(PG_FUNCTION_ARGS)
 		Oid					element_type1;
 		Oid					element_type2;
 		bool 				is_similar = true;
+    float4			distance = 0;
+    int         i;
+    float4      *val1, *val2;
+    float4      delta;
 
 		/* Can't do anything with null arrays */
 		if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
@@ -166,7 +170,19 @@ arrays_similar(PG_FUNCTION_ARGS)
 		/*
 		 * TODO: Implement checks
 		 */
-
+    val1 = ARRPTR(v1);
+    val2 = ARRPTR(v2);
+    for(i=0; i<nitems1; i++)
+    {
+    	delta = *val2 - *val1;
+    	distance += delta * delta;
+      if(distance>distance_threshold){
+        is_similar = false;
+        break;
+      }
+    	val1++;
+    	val2++;
+    }
 
 	PG_RETURN_BOOL(is_similar);
 }
@@ -191,7 +207,7 @@ array_dist(PG_FUNCTION_ARGS)
 		int i;
 		float4 *val1, *val2;
 		float4 delta;
-	
+
 		/* Can't do anything with null arrays */
 		if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
 		{
@@ -235,7 +251,7 @@ array_dist(PG_FUNCTION_ARGS)
 			distance += delta * delta;
 			val1++;
 			val2++;
-		} 
+		}
 
 	PG_RETURN_FLOAT4(sqrt(distance));
 }
