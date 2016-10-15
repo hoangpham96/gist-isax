@@ -1,11 +1,9 @@
 CREATE TABLE isax_elem_test (isaxvalue isaxelem);
-
 INSERT INTO isax_elem_test(isaxvalue) VALUES ('1:1') RETURNING isaxvalue;
  isaxvalue 
 -----------
  1:1
 (1 row)
-
 
 INSERT INTO isax_elem_test(isaxvalue) VALUES ('1:2') RETURNING isaxvalue;
  isaxvalue 
@@ -13,13 +11,11 @@ INSERT INTO isax_elem_test(isaxvalue) VALUES ('1:2') RETURNING isaxvalue;
  1:2
 (1 row)
 
-
 INSERT INTO isax_elem_test(isaxvalue) VALUES ('2:1') RETURNING isaxvalue;
  isaxvalue 
 -----------
  2:1
 (1 row)
-
 
 INSERT INTO isax_elem_test(isaxvalue) VALUES ('2:255') RETURNING isaxvalue;
  isaxvalue 
@@ -27,15 +23,28 @@ INSERT INTO isax_elem_test(isaxvalue) VALUES ('2:255') RETURNING isaxvalue;
  2:256
 (1 row)
 
-
 INSERT INTO isax_elem_test(isaxvalue) VALUES ('1:256') RETURNING isaxvalue;
  isaxvalue 
 -----------
  1:256
 (1 row)
 
-
 INSERT INTO isax_elem_test(isaxvalue) VALUES ('1:257') RETURNING isaxvalue;
 ERROR:  iSAX element cardinality exceeds allowed range: "1:257"
 LINE 1: INSERT INTO isax_elem_test(isaxvalue) VALUES ('1:257') RETUR...
                                                       ^
+CREATE TABLE isax_word_test (isaxword isax );
+INSERT INTO isax_word_test(isaxword) VALUES ('{1:1}') RETURNING isaxword;
+ERROR:  Too few elements for iSAX word: "{1:1}"
+LINE 1: INSERT INTO isax_word_test(isaxword) VALUES ('{1:1}') RETURN...
+                                                     ^
+INSERT INTO isax_word_test(isaxword) VALUES ('{1:1,1:1,1:1,1:1,1:1,1:1,1:1,1:1,1:1,1:1,1:1,1:1,1:1,1:1}') RETURNING isaxword;
+                         isaxword                          
+-----------------------------------------------------------
+ {1:1,1:1,1:1,1:1,1:1,1:1,1:1,1:1,0:1,0:1,0:1,0:1,0:1,0:1}
+(1 row)
+
+INSERT INTO isax_word_test(isaxword) VALUES ('{1:1,1:1,1:1,1:1,1:1,1:1,1:1,1:1,1:1,1:1,1:1,1:1,1:1,1:1,1:1}') RETURNING isaxword;
+ERROR:  Too many elements for iSAX word: "{1:1,1:1,1:1,1:1,1:1,1:1,1:1,1:1,1:1,1:1,1:1,1:1,1:1,1:1,1:1}"
+LINE 1: INSERT INTO isax_word_test(isaxword) VALUES ('{1:1,1:1,1:1,1...
+                                                     ^

@@ -15,3 +15,7 @@ INSERT INTO isax_elem_test(isaxvalue) VALUES ('1:257') RETURNING isaxvalue;
 CREATE TABLE isax_word_test (isaxword isax );
 
 INSERT INTO isax_word_test(isaxword) VALUES ('{1:1}') RETURNING isaxword;
+
+INSERT INTO isax_word_test(isaxword) VALUES ('{1:1,1:1,1:1,1:1,1:1,1:1,1:1,1:1,1:1,1:1,1:1,1:1,1:1,1:1}') RETURNING isaxword;
+
+INSERT INTO isax_word_test(isaxword) VALUES ('{1:1,1:1,1:1,1:1,1:1,1:1,1:1,1:1,1:1,1:1,1:1,1:1,1:1,1:1,1:1}') RETURNING isaxword;

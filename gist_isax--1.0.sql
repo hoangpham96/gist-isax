@@ -50,6 +50,13 @@ CREATE TYPE isax (
         ELEMENT = isaxelem
 );
 
+CREATE FUNCTION isax(isaxelem[])
+RETURNS isax
+AS 'MODULE_PATHNAME', 'isax_elem_array_to_isax'
+LANGUAGE C IMMUTABLE STRICT;
+
+CREATE CAST (isaxelem[] AS isax) WITH FUNCTION isax(isaxelem[]);
+
 --
 -- GiST functions
 --
