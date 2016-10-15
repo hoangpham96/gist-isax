@@ -255,3 +255,19 @@ array_dist(PG_FUNCTION_ARGS)
 
 	PG_RETURN_FLOAT4(sqrt(distance));
 }
+
+
+PG_FUNCTION_INFO_V1(ts_to_paa);
+Datum ts_to_paa(PG_FUNCTION_ARGS);
+
+Datum
+ts_to_paa(PG_FUNCTION_ARGS)
+{
+  char* ts = PG_GETARG_CSTRING(0);
+  char* result;
+
+  char test[] = ts;
+  result = ts;
+
+	PG_RETURN_CSTRING(result);
+}

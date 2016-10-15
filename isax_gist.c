@@ -225,4 +225,3 @@ gist_isax_distance(PG_FUNCTION_ARGS)
 
 	PG_RETURN_FLOAT8(retval);
 }
-
