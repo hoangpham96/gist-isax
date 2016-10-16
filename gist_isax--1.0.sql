@@ -11,10 +11,15 @@ RETURNS bool
 AS 'MODULE_PATHNAME'
 LANGUAGE C STRICT;
 
-CREATE FUNCTION ts_to_paa(cstring)
-RETURNS cstring
+CREATE FUNCTION ts_to_paa(anyarray)
+RETURNS anyarray
 AS 'MODULE_PATHNAME'
 LANGUAGE C STRICT;
+
+-- DROP EXTENSION gist_isax CASCADE;
+-- CREATE EXTENSION gist_isax;
+
+CREATE OPERATOR @ (RIGHTARG = anyarray, PROCEDURE = ts_to_paa);
 
 CREATE OPERATOR % (LEFTARG = anyarray, RIGHTARG = anyarray, PROCEDURE = arrays_similar);
 

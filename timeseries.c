@@ -263,10 +263,9 @@ Datum ts_to_paa(PG_FUNCTION_ARGS);
 Datum
 ts_to_paa(PG_FUNCTION_ARGS)
 {
-  char* ts = PG_GETARG_CSTRING(0);
-  char* result;
+  ArrayType* ts = PG_GETARG_ARRAYTYPE_P(0);
+  ArrayType* result = palloc(sizeof(ArrayType));
 
-  char test[] = ts;
   result = ts;
 
 	PG_RETURN_CSTRING(result);
