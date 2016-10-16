@@ -263,10 +263,53 @@ Datum ts_to_paa(PG_FUNCTION_ARGS);
 Datum
 ts_to_paa(PG_FUNCTION_ARGS)
 {
-  ArrayType* ts = PG_GETARG_ARRAYTYPE_P(0);
-  ArrayType* result = palloc(sizeof(ArrayType));
+  int* dims;
+  int i, j,
+      ndims,
+      n,
+      w = 14;
+  ArrayType* ts;
+  ArrayType* result = (ArrayType *) palloc(sizeof(ArrayType*));
+
+  float4 c[w];
+  float4* val; //Array pointer for ts
+  float4* val_res; //Array pointer for result
+
+  // Check for null args
+  if (PG_ARGISNULL(0))
+  {
+    PG_RETURN_NULL();
+  }
+
+  ts = PG_GETARG_ARRAYTYPE_P(0);
+
+  /* Also don't want nulls within the array */
+  if (array_contains_nulls(ts))
+  {
+    PG_RETURN_NULL();
+  }
+
+  ndims = ARR_NDIM(ts);
+  dims = ARR_DIMS(ts);
+  n = ArrayGetNItems(ndims,dims);
+
+  val = ARRPTR(ts);
+  for(i = 1 ; i <= w; i+=1){
+    c[i-1] = 0;
+    for(j = n/w * (i-1)+1; j <= n/w * i; j+=1){
+      c[i-1] += *val;
+      val++;
+    }
+    c[i-1] = (float)w/(float)n * c[i-1];
+  }
 
   result = ts;
 
-	PG_RETURN_CSTRING(result);
+  val_res = ARRPTR(result);
+  for(i=0;i<w; i+=1){
+    *val_res = c[i];
+    val_res++;
+  }
+
+	PG_RETURN_ARRAYTYPE_P(result);
 }
