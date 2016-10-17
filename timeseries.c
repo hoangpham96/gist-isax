@@ -314,18 +314,15 @@ ts_to_paa(PG_FUNCTION_ARGS)
         card = 256;
     //Bottom breakpoint
     if(c[i]<saxbp[0]){
-      v = 1;
-    }
-    //Top breakpoint
-    else if(c[i]>saxbp[card-1]){
-      v = card;
+    	v = 1;
     }
     else{
-      for(j = 1; j<card-1; j += 1){
-        if (c[i]>saxbp[j-1] && c[i]<j){
-          v = j+1;
-        }
-      }
+    	for(j = 1; j<card-1; j += 1){
+    		if (c[i] >= saxbp[j-1] && c[i] < saxbp[j]){
+    			v = j+1;
+    			break;
+    		}
+    	}
     }
 
     isaxelem->value = v;
