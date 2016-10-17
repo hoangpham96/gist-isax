@@ -286,23 +286,23 @@ gist_isax_ts_to_paa(ArrayType* key){
 	return result;
 }
 
+//TODO: recheck this function: see if formula for v goes from 0->255
 compressed_data_type*
 gist_isax_paa_to_isax(float4* paa){
 	/*Turning PAA representation to isax words in format of v:card*/
 	ISAXWORD* isax;
 	int i = 0,
 			w = 14;
-	float c[w];
+	float4 c[w] = paa;
 
 	for(i = 0 ; i < w; i += 1){
 		ISAXELEM* isaxelem;
 		int v,
 				card = 256;
-
 		/*Finding v*/
 		//Bottom breakpoint
 		if(c[i]<saxbp[0]){
-			v = 1;
+			v = 0;
 		}
 		else{
 			for(j = 1; j<card-1; j += 1){
@@ -313,9 +313,8 @@ gist_isax_paa_to_isax(float4* paa){
 			}
 		}
 
-		//TODO: turn v and card to unsigned char fist !!!
-		isaxelem->value = v;
-		isaxelem->validbits = card;
+		isaxelem->value = (unsigned char)(v-1);
+		isaxelem->validbits = (unsigned char)(card-1);
 
 		isax->elements[i] = *isaxelem;
 	}
@@ -330,15 +329,14 @@ mindist_paa_isax(data_type* entry, data_type* query){
 			w = 14;
 	float adjust;
 	//TODO: Get entry into isax
-	ISAXWORD isax;
+	ISAXWORD* isax;
 	float4* tpaa = gist_isax_ts_to_paa(query);
 
-
 	for(i = 1, i <= w, i +=1){
-		ISAXELEM isaxelem = isax->elements[i-1];
+		ISAXELEM* isaxelem = isax->elements[i-1];
 		//TODO: Get v and card for each isaxelem. Remember to convert unsigned char to int before assignment
-		int v,
-				card;
+		int v = ((int) isaxelem->value)+1,
+				card ((int) isaxelem->validbits)+1;
 		float beta_L = calc_lower_bp(v,card),
 					beta_U = calc_upper_bp(v,card),
 					delta;
