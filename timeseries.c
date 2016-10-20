@@ -311,19 +311,20 @@ paa_to_isax(PG_FUNCTION_ARGS)
   int i, j,
       w = 14,
       v,
+      l = 2 + w*8,
       card = 256;
   float4* val;
   ArrayType* paa = (ArrayType*) PG_GETARG_ARRAYTYPE_P(0);
   //TODO: what should I allocate for buffer size
-  char buffer[1400];
-  char* result;
+  char* buffer;
+  char* result = palloc(l*sizeof(char));
 
-  strcat(buffer, "{");
+  buffer = result;
+  *buffer = '{';
+
   val = ARRPTR(paa); //Array pointer for paa
   for(i = 0 ; i < w; i += 1){
 
-
-    char tmp[10];
     v = 0; //If the final result have v = 0, the formula for isax is wrong
     // ISAXELEM* isaxelem;
 
@@ -339,19 +340,15 @@ paa_to_isax(PG_FUNCTION_ARGS)
     		}
     	}
     }
-    if (i == w-1){
-      sprintf(tmp, "%d:%d", v,card);
-    }
-    else{
-      sprintf(tmp, "%d:%d,", v,card);
-    }
-    strcat(buffer, tmp);
+
+    ++buffer;
+    buffer += sprintf(buffer, "%d:%d", v,card);
+    *buffer = ',';
+
     val++;
   }
-  strcat(buffer,"}");
-  result = buffer;
-  //TODO: find out why there's a weird ')' in front if result is not incremented
-  result++;
+  *buffer = '}';
+  *(++buffer) = '\0';
   PG_RETURN_CSTRING(result);
 }
 

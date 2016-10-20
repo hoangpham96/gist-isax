@@ -102,6 +102,6 @@ SELECT paa_to_isax(signal_paa) FROM test_ecg_paa WHERE id =1 ;
 
 --Testing isax
 CREATE TABLE isax_test(id SERIAL PRIMARY KEY, signal_isax isax);
-INSERT INTO isax_test(signal_isax) SELECT paa_to_isax(signal_paa)::isax FROM test_ecg_paa;
--- INSERT INTO isax_test(signal_isax) VALUES ('{2:256,90:256,81:256,66:256,111:256,147:256,175:256,189:256,173:256,168:256,245:256,142:256,99:256,177:256}');
+-- INSERT INTO isax_test(signal_isax) SELECT paa_to_isax(signal_paa)::isax FROM test_ecg_paa;
+INSERT INTO isax_test(signal_isax) VALUES ('{2:256,90:256,81:256,66:256,111:256,147:256,175:256,189:256,173:256,168:256,245:256,142:256,99:256,177:256}');
 SELECT * FROM isax_test;
