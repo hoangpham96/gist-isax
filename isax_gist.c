@@ -362,42 +362,40 @@ mindist_paa_isax(ISAXWORD* entry, ArrayType* key){
 
 ISAXWORD*
 gist_isax_union_implementation(ISAXWORD* left,ISAXWORD* right){
-	int i,
-			vl,
-			vr
-			cardl,
-			cardr;
-	float left_bp_plus[w],
-				left_bp_minus[w],
-				right_bp_plus[w],
-				right_bp_minus[w];
+	int i;
+	int bp_plus[w],
+			bp_minus[w],
 	ISAXWORD* result = palloc(sizeof(ISAXWORD));
 
-	vl = (int)left->elements[i].value +1;
-	vr = (int)right->elements[i].value +1;
-	cardl = 1<<((int)left->elements[i].validbits);
-	cardr = 1<<((int)right->elements[i].validbits);
 
 	//Initializing
 	for(i =0; i < w; i+=1){
-		left_bp_plus[i] = ;
-		left_bp_minus[i = ;
-		right_bp_plus[i] = ;
-		right_bp_minus[i = ;
+		bp_plus[i] = 0;
+		bp_minus[i = 255;
 	}
 
 	//Getting bp's for left
 	for (i = 0; i < w; i+=1){
-		float bp = ;
-		left_bp_plus[i] = left_bp_plus[i] > bp ? left_bp_plus[i] : bp; //max(left_bp_plus[i], bp)
-		left_bp_minus[i] = left_bp_minus[i] < bp ? left_bp_minus[i] : bp; //min(left_bp_minus[i], bp)
+		int bp = (int)left->elements[i].value ;
+		bp_plus[i] = bp_plus[i] > bp ? bp_plus[i] : bp; //max(bp_plus[i], bp)
+		bp_minus[i] = bp_minus[i] < bp ? bp_minus[i] : bp; //min(bp_minus[i], bp)
 	}
 
 	//Getting bp's for right
 	for (i = 0; i < w; i+=1){
-		float bp = ;
-		right_bp_plus[i] = right_bp_plus[i] > bp ? right_bp_plus[i] : bp; //max(right_bp_plus[i], bp)
-		right_bp_minus[i] = right_bp_minus[i] < bp ? right_bp_minus[i] : bp; //min(right_bp_minus[i], bp)
+		int bp = (int)right->elements[i].value ;
+		bp_plus[i] = bp_plus[i] > bp ? bp_plus[i] : bp; //max(bp_plus[i], bp)
+		bp_minus[i] = bp_minus[i] < bp ? bp_minus[i] : bp; //min(bp_minus[i], bp)
+	}
+
+	//Getting result
+	for (i = 0; i < w; i+=1){
+		int v = bp_minus[i];
+		int n =
+		ISAXELEM* isaxelem;
+		isaxelem->value = v;
+		isaxelem->validbits = n;
+		result->elements[i] = isaxelem;
 	}
 	return(result);
 }
