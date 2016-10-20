@@ -67,7 +67,7 @@ AS 'MODULE_PATHNAME'
 LANGUAGE C IMMUTABLE STRICT;
 
 CREATE TYPE isax (
-        INTERNALLENGTH = 16,
+        INTERNALLENGTH = 28,
         INPUT = isax_in,
         OUTPUT = isax_out,
         ELEMENT = isaxelem

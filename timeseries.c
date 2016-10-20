@@ -261,7 +261,9 @@ array_dist(PG_FUNCTION_ARGS)
 	PG_RETURN_FLOAT4(sqrt(distance));
 }
 
-
+/*
+* All of the test functions go here since I'm too lazy to create a new file and have to set up git and stuff.
+*/
 PG_FUNCTION_INFO_V1(ts_to_paa);
 Datum ts_to_paa(PG_FUNCTION_ARGS);
 

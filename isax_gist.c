@@ -18,11 +18,11 @@ Datum
 gist_isax_consistent(PG_FUNCTION_ARGS)
 {
 	GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
-	data_type  *query = PG_GETARG_DATA_TYPE_P(1);
+	ArrayType  *query = PG_GETARG_DATA_TYPE_P(1);
 	StrategyNumber strategy = (StrategyNumber) PG_GETARG_UINT16(2);
 	/* Oid subtype = PG_GETARG_OID(3); */
 	bool       *recheck = (bool *) PG_GETARG_POINTER(4);
-	data_type  *key = DatumGetDataType(entry->key);
+	ISAXWORD  *key = DatumGetDataType(entry->key);
 	bool        retval;
 
 	/*
@@ -38,7 +38,7 @@ gist_isax_consistent(PG_FUNCTION_ARGS)
 		 retval = false;
 	 }
 	 else{
-		 if(mindist_paa_isax(entry, query) <= distance_threshold){
+		 if(mindist_paa_isax(key, query) <= distance_threshold){
 			 retval = true;
 		 }
 		 else {
@@ -60,11 +60,11 @@ gist_isax_union(PG_FUNCTION_ARGS)
 {
 	GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
 	GISTENTRY  *ent = entryvec->vector;
-	data_type  *out,
-	*tmp,
-	*old;
-	int         numranges,
-	i = 0;
+	ISAXWORD  *out,
+						*tmp,
+						*old;
+	int numranges,
+			i = 0;
 
 	numranges = entryvec->n;
 	tmp = DatumGetDataType(ent[0].key);
@@ -74,6 +74,7 @@ gist_isax_union(PG_FUNCTION_ARGS)
 	{
 		out = data_type_deep_copy(tmp);
 
+		//TODO: PG_RETURN_DATA_TYPE_P not found in doxygen.postgressql.org
 		PG_RETURN_DATA_TYPE_P(out);
 	}
 
@@ -94,13 +95,13 @@ gist_isax_compress(PG_FUNCTION_ARGS)
 {
 	GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
 	GISTENTRY  *retval;
-	data_type  *key = DatumGetDataType(entry->key);
+	ArrayType  *key = DatumGetDataType(entry->key);
 
 	if (entry->leafkey)
 	{
 
 		/* replace entry->key with a compressed version */
-		compressed_data_type *compressed_data = palloc(sizeof(compressed_data_type));
+		ISAXWORD *compressed_data = palloc(sizeof(ISAXWORD));
 
 		/* fill *compressed_data from entry->key ... */
 		paa = gist_isax_ts_to_paa(key);
@@ -136,8 +137,9 @@ gist_isax_penalty(PG_FUNCTION_ARGS)
 	GISTENTRY  *origentry = (GISTENTRY *) PG_GETARG_POINTER(0);
 	GISTENTRY  *newentry = (GISTENTRY *) PG_GETARG_POINTER(1);
 	float      *penalty = (float *) PG_GETARG_POINTER(2);
-	data_type  *orig = DatumGetDataType(origentry->key);
-	data_type  *new = DatumGetDataType(newentry->key);
+	//TODO: is this ISAXWORD or ArrayType
+	ISAXWORD  *orig = (ISAXWORD*) DatumGetDataType(origentry->key);
+	ISAXWORD  *new = (ISAXWORD*) DatumGetDataType(newentry->key);
 
 	*penalty = gist_isax_penalty_implementation(orig, new);
 	PG_RETURN_POINTER(penalty);
@@ -262,7 +264,7 @@ gist_isax_ts_to_paa(ArrayType* key){
   ArrayType* ts;
 	float4* result;
 
-  float4 c[w];
+  float4 c[w]; //Use for computation of result. Using this just to be sure there's no error.
   float4* val; //Array pointer for ts
 
 	ts = key;
@@ -286,23 +288,21 @@ gist_isax_ts_to_paa(ArrayType* key){
 	return result;
 }
 
-//TODO: recheck this function: see if formula for v goes from 0->255
-compressed_data_type*
+ISAXWORD*
 gist_isax_paa_to_isax(float4* paa){
 	/*Turning PAA representation to isax words in format of v:card*/
 	ISAXWORD* isax;
 	int i = 0,
-			w = 14;
+			w = 14,
+			v,
+			n = 8;
 	float4 c[w] = paa;
 
 	for(i = 0 ; i < w; i += 1){
 		ISAXELEM* isaxelem;
-		int v,
-				card = 256;
-		/*Finding v*/
 		//Bottom breakpoint
 		if(c[i]<saxbp[0]){
-			v = 0;
+			v = 1;
 		}
 		else{
 			for(j = 1; j<card-1; j += 1){
@@ -313,30 +313,30 @@ gist_isax_paa_to_isax(float4* paa){
 			}
 		}
 
+		//Unsigned char only goes from 0-255 so v has to be -1;
 		isaxelem->value = (unsigned char)(v-1);
-		isaxelem->validbits = (unsigned char)(card-1);
+		isaxelem->validbits = (unsigned char)(n);
 
 		isax->elements[i] = *isaxelem;
 	}
+	return(isax);
 }
 
 //TODO: find out if query is a timeseries or paa rep of a timeseries
 double
-mindist_paa_isax(data_type* entry, data_type* query){
+mindist_paa_isax(ISAXWORD* entry, ArrayType* key){
 	double mindist = 0;
 	int i = 0,
-			n, //should be length of query
+			n = 140,
 			w = 14;
 	float adjust;
-	//TODO: Get entry into isax
-	ISAXWORD* isax;
-	float4* tpaa = gist_isax_ts_to_paa(query);
+	ISAXWORD* isax = entry;
+	float4* tpaa = gist_isax_ts_to_paa(key);
 
 	for(i = 1, i <= w, i +=1){
 		ISAXELEM* isaxelem = isax->elements[i-1];
-		//TODO: Get v and card for each isaxelem. Remember to convert unsigned char to int before assignment
 		int v = ((int) isaxelem->value)+1,
-				card ((int) isaxelem->validbits)+1;
+				card =  1 << ((int) isaxelem->validbits);
 		float beta_L = calc_lower_bp(v,card),
 					beta_U = calc_upper_bp(v,card),
 					delta;
@@ -360,12 +360,54 @@ mindist_paa_isax(data_type* entry, data_type* query){
 	return(mindist);
 }
 
+ISAXWORD*
+gist_isax_union_implementation(ISAXWORD* left,ISAXWORD* right){
+	int i,
+			vl,
+			vr
+			cardl,
+			cardr;
+	float left_bp_plus[w],
+				left_bp_minus[w],
+				right_bp_plus[w],
+				right_bp_minus[w];
+	ISAXWORD* result = palloc(sizeof(ISAXWORD));
+
+	vl = (int)left->elements[i].value +1;
+	vr = (int)right->elements[i].value +1;
+	cardl = 1<<((int)left->elements[i].validbits);
+	cardr = 1<<((int)right->elements[i].validbits);
+
+	//Initializing
+	for(i =0; i < w; i+=1){
+		left_bp_plus[i] = ;
+		left_bp_minus[i = ;
+		right_bp_plus[i] = ;
+		right_bp_minus[i = ;
+	}
+
+	//Getting bp's for left
+	for (i = 0; i < w; i+=1){
+		float bp = ;
+		left_bp_plus[i] = left_bp_plus[i] > bp ? left_bp_plus[i] : bp; //max(left_bp_plus[i], bp)
+		left_bp_minus[i] = left_bp_minus[i] < bp ? left_bp_minus[i] : bp; //min(left_bp_minus[i], bp)
+	}
+
+	//Getting bp's for right
+	for (i = 0; i < w; i+=1){
+		float bp = ;
+		right_bp_plus[i] = right_bp_plus[i] > bp ? right_bp_plus[i] : bp; //max(right_bp_plus[i], bp)
+		right_bp_minus[i] = right_bp_minus[i] < bp ? right_bp_minus[i] : bp; //min(right_bp_minus[i], bp)
+	}
+	return(result);
+}
+
 float
-gist_isax_penalty_implementation(data_type* orig, data_type* new ){
+gist_isax_penalty_implementation(ISAXWORD* orig, ISAXWORD* new ){
 	float delta = 0;
-	ISAXWORD A,
-					 B;
-	//TODO: Get isax key from orig and new and put it into A and B
+	ISAXWORD A = *orig,
+					 B = *orig;
+	//TODO: Get isax key from orig and new and put it into A and B. Find out the type of orig and new first
 	ISAXELEM e_A[] = A->elements;
 	ISAXELEM e_B[] = B->elements;
 	int i,
@@ -373,8 +415,8 @@ gist_isax_penalty_implementation(data_type* orig, data_type* new ){
 
 	for (i = 0; i < w; i ){
 		int c_A, c_B;
-		c_A = ((int)e_A[i]->validbits) +1;
-		c_B = ((int)e_B[i]->validbits) +1;
+		c_A = 1 << ((int)e_A[i]->validbits) ;
+		c_B = 1 << ((int)e_B[i]->validbits) ;
 		delta += (c_B - c_A);
 	}
 
