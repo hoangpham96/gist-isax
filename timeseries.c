@@ -273,25 +273,11 @@ ts_to_paa(PG_FUNCTION_ARGS)
       ndims,
       n,
       w = 14;
-  ArrayType* ts;
+  ArrayType* ts = PG_GETARG_ARRAYTYPE_P(0);
   ArrayType* result;
 
   Datum* c = (Datum *) palloc(w*sizeof(Datum));
   float4* val; //Array pointer for ts
-
-  // Check for null args
-  if (PG_ARGISNULL(0))
-  {
-    PG_RETURN_NULL();
-  }
-
-  ts = PG_GETARG_ARRAYTYPE_P(0);
-
-  /* Also don't want nulls within the array */
-  if (array_contains_nulls(ts))
-  {
-    PG_RETURN_NULL();
-  }
 
   ndims = ARR_NDIM(ts);
   dims = ARR_DIMS(ts);
@@ -357,7 +343,7 @@ paa_to_isax(PG_FUNCTION_ARGS)
     }
 
     sprintf(tmp, "%d:%d", v,card);
-    isax[i] = CStringGetDatum(tmp);
+    isax[i] = PointerGetDatum(tmp);
     val++;
   }
 

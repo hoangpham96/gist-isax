@@ -371,11 +371,10 @@ gist_isax_penalty_implementation(data_type* orig, data_type* new ){
 	int i,
 		 	w = 14;
 
-	for (i = 1; i <= w; i ){
-		unsigned char c_A, c_B;
-		c_A = e_A[i-1]->validbits;
-		c_B = e_B[i-1]->validbits;
-		//TODO: Turn c_A, c_B from unsigned char to int or float
+	for (i = 0; i < w; i ){
+		int c_A, c_B;
+		c_A = ((int)e_A[i]->validbits) +1;
+		c_B = ((int)e_B[i]->validbits) +1;
 		delta += (c_B - c_A);
 	}
 
