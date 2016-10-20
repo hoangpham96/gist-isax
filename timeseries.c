@@ -312,20 +312,16 @@ paa_to_isax(PG_FUNCTION_ARGS)
       card = 256;
   float4* val;
   ArrayType* paa = (ArrayType*) PG_GETARG_ARRAYTYPE_P(0);
-  Datum* isax = (Datum *) palloc(w*sizeof(Datum));
-  ArrayType* result;
-  // char result[2+w*(4+1+4)+w-1]; //2 for {}, 4+1+4 for v:c, w-1 for ','
+  //TODO: what should I allocate for buffer size
+  char buffer[1400];
+  char* result;
 
-  int16 typlen;
-  bool typbyval;
-  char typalign;
-  get_typlenbyvalalign(CSTRINGOID, &typlen, &typbyval, &typalign);
-
+  strcat(buffer, "{");
   val = ARRPTR(paa); //Array pointer for paa
   for(i = 0 ; i < w; i += 1){
 
 
-    char tmp[100];
+    char tmp[10];
     v = 0; //If the final result have v = 0, the formula for isax is wrong
     // ISAXELEM* isaxelem;
 
@@ -341,14 +337,20 @@ paa_to_isax(PG_FUNCTION_ARGS)
     		}
     	}
     }
-
-    sprintf(tmp, "%d:%d", v,card);
-    isax[i] = PointerGetDatum(tmp);
+    if (i == w-1){
+      sprintf(tmp, "%d:%d", v,card);
+    }
+    else{
+      sprintf(tmp, "%d:%d,", v,card);
+    }
+    strcat(buffer, tmp);
     val++;
   }
-
-  result = construct_array(isax, w, CSTRINGOID, typlen, typbyval, typalign);
-  PG_RETURN_ARRAYTYPE_P(result);
+  strcat(buffer,"}");
+  result = buffer;
+  //TODO: find out why there's a weird ')' in front if result is not incremented
+  result++;
+  PG_RETURN_CSTRING(result);
 }
 
 PG_FUNCTION_INFO_V1(calc_lower_bp);
