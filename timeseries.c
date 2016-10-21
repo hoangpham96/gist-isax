@@ -182,7 +182,7 @@ arrays_similar(PG_FUNCTION_ARGS)
     {
     	delta = *val2 - *val1;
     	distance += delta * delta;
-      if(distance>distance_threshold){
+      if(distance>distance_threshold*distance_threshold){
         is_similar = false;
         break;
       }
