@@ -18,6 +18,8 @@
  */
  char* write_isax(ISAXWORD* input);
  ISAXWORD* read_isax(char* input);
+ float static_calc_lower_bp(int v, int card);
+ float static_calc_upper_bp(int v, int card);
 
 PG_MODULE_MAGIC;
 
@@ -342,47 +344,43 @@ paa_to_isax(PG_FUNCTION_ARGS)
 }
 
 //TODO: finish
-// PG_FUNCTION_INFO_V1(mindist_paa_isax);
-// Datum mindist_paa_isax(PG_FUNCTION_ARGS);
-//
-// Datum mindist_paa_isax(PG_FUNCTION_ARGS){
-//   float mindist = 0;
-// 	int i = 0,
-// 			n = 140,
-// 			w = 14;
-//   char* isaxbuffer = PG_GETARG_CSTRING(0);
-// 	ISAXWORD* isax = (ISAXWORD *) palloc(sizeof(ISAXWORD));
-//   ArrayType* key = PG_GETARG_ARRAYTYPE_P(1);
-// 	float4* tpaa = gist_isax_ts_to_paa(key);
-//
-// isax = read_isax(isaxbuffer);
-//
-//   //Main code
-// 	for(i = 1; i <= w; i +=1){
-// 		ISAXELEM* isaxelem = &isax->elements[i-1];
-// 		int v = ((int) isaxelem->value)+1,
-// 				card =  1 << ((int) isaxelem->validbits);
-// 		float beta_L = gist_isax_calc_lower_bp(v,card),
-// 					beta_U = gist_isax_calc_upper_bp(v,card),
-// 					delta;
-//
-// 		if(*tpaa < beta_L){
-// 			delta = beta_L - *tpaa;
-// 		}
-// 		else if (*tpaa > beta_U){
-// 			delta = *tpaa - beta_U;
-// 		}
-// 		else{
-// 			delta = 0;
-// 		}
-// 		mindist += delta * delta;
-//
-// 		tpaa++;
-// 	}
-//
-// 	mindist = sqrt((float)n/(float)w) * mindist;
-//   PG_RETURN_FLOAT4(mindist);
-// }
+PG_FUNCTION_INFO_V1(mindist);
+Datum mindist(PG_FUNCTION_ARGS);
+
+Datum mindist(PG_FUNCTION_ARGS){
+  float mindist = 0;
+	int i = 0,
+			n = 140,
+			w = 14;
+	ISAXWORD* entry = read_isax(PG_GETARG_CSTRING(0));
+  ArrayType* key = PG_GETARG_ARRAYTYPE_P(1);
+  float4* tpaa = ARRPTR(key);
+
+  //Main code
+	for(i = 0; i < w; i +=1){
+    int v = (int) entry->elements[i].value,
+				card =  1 << ((int) entry->elements[i].validbits);
+		float beta_L = static_calc_lower_bp(v,card),
+					beta_U = static_calc_upper_bp(v,card);
+		float	delta;
+
+		if(*tpaa < beta_L){
+			delta = beta_L - *tpaa;
+		}
+		else if (*tpaa > beta_U){
+			delta = *tpaa - beta_U;
+		}
+		else{
+			delta = 0;
+		}
+		mindist += delta * delta;
+
+		tpaa++;
+	}
+
+	mindist = sqrt((float)n/(float)w) * mindist;
+  PG_RETURN_FLOAT4(mindist);
+}
 
 
 PG_FUNCTION_INFO_V1(penalty_implementation);
@@ -407,7 +405,6 @@ Datum penalty_implementation(PG_FUNCTION_ARGS){
  PG_RETURN_FLOAT4(delta);
 }
 
-// TODO: finish
 PG_FUNCTION_INFO_V1(union_implementation);
 Datum union_implementation(PG_FUNCTION_ARGS);
 
@@ -551,4 +548,30 @@ write_isax(ISAXWORD* input){
   *buffer = '}';
   *(++buffer) = '\0';
   return(result);
+}
+
+float
+static_calc_lower_bp(int v, int card){
+	int mult = 256/card;
+	float bp;
+
+	if(v == 0){
+		bp = -100;
+	}
+	else{
+		bp = saxbp[(v)*mult -1];
+	}
+
+	return(bp);
+}
+
+float
+static_calc_upper_bp(int v, int card){
+	//Assume that card is a demoninator of 256
+	int mult = 256/card;
+	float bp;
+
+	bp = saxbp[(v+1)*mult -1];
+
+	return(bp);
 }

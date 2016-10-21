@@ -365,16 +365,12 @@ double
 gist_isax_mindist_paa_isax(ISAXWORD* entry, ArrayType* key){
 	double mindist = 0;
 	int i = 0,
-			n = 140,
 			w = 14;
-	float adjust;
-	ISAXWORD* isax = entry;
 	float4* tpaa = gist_isax_ts_to_paa(key);
 
-	for(i = 1; i <= w; i +=1){
-		ISAXELEM* isaxelem = &isax->elements[i-1];
-		int v = ((int) isaxelem->value),
-				card =  1 << ((int) isaxelem->validbits);
+	for(i = 0; i < w; i += 1){
+		int v = (int) entry->elements[i].value,
+				card =  1 << ((int) entry->elements[i].validbits);
 		float beta_L = gist_isax_calc_lower_bp(v,card),
 					beta_U = gist_isax_calc_upper_bp(v,card),
 					delta;
@@ -393,8 +389,7 @@ gist_isax_mindist_paa_isax(ISAXWORD* entry, ArrayType* key){
 		tpaa++;
 	}
 
-	adjust = sqrt((float)n/(float)w);
-	mindist = mindist * adjust;
+	mindist = sqrt((float)n/(float)w) * mindist;
 	return(mindist);
 }
 

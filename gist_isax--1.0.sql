@@ -43,6 +43,11 @@ RETURNS cstring
 AS 'MODULE_PATHNAME'
 LANGUAGE C STRICT;
 
+CREATE FUNCTION mindist(cstring, anyarray)
+RETURNS real
+AS 'MODULE_PATHNAME'
+LANGUAGE C STRICT;
+
 --End of test functions
 
 CREATE OPERATOR % (LEFTARG = anyarray, RIGHTARG = anyarray, PROCEDURE = arrays_similar);
