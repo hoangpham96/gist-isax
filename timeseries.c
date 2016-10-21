@@ -348,7 +348,7 @@ PG_FUNCTION_INFO_V1(mindist);
 Datum mindist(PG_FUNCTION_ARGS);
 
 Datum mindist(PG_FUNCTION_ARGS){
-  float mindist = 0;
+  float result = 0;
 	int i = 0,
 			n = 140,
 			w = 14;
@@ -373,13 +373,13 @@ Datum mindist(PG_FUNCTION_ARGS){
 		else{
 			delta = 0;
 		}
-		mindist += delta * delta;
+		result += delta * delta;
 
 		tpaa++;
 	}
 
-	mindist = sqrt((float)n/(float)w) * mindist;
-  PG_RETURN_FLOAT4(mindist);
+	result = sqrt((float)n/(float)w) * result;
+  PG_RETURN_FLOAT4(result);
 }
 
 
