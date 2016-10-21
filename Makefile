@@ -1,5 +1,5 @@
 EXTENSION = gist_isax
-OBJS = timeseries.o isax.o # isax_gist.o
+OBJS = timeseries.o isax.o isax_gist.o
 DATA = gist_isax--1.0.sql
 DOCS = README.gist_isax
 MODULE_big = gist_isax

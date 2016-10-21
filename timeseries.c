@@ -16,10 +16,10 @@
  * The functions here are written to conform with the Postgres function manager and
  * function-call interface. See http://doxygen.postgresql.org/fmgr_8h_source.html
  */
- char* write_isax(ISAXWORD* input);
- ISAXWORD* read_isax(char* input);
- float static_calc_lower_bp(int v, int card);
- float static_calc_upper_bp(int v, int card);
+char* write_isax(ISAXWORD* input);
+ISAXWORD* read_isax(char* input);
+float static_calc_lower_bp(int v, int card);
+float static_calc_upper_bp(int v, int card);
 
 PG_MODULE_MAGIC;
 
@@ -382,6 +382,29 @@ Datum mindist(PG_FUNCTION_ARGS){
   PG_RETURN_FLOAT4(result);
 }
 
+PG_FUNCTION_INFO_V1(same);
+Datum same(PG_FUNCTION_ARGS);
+
+Datum same(PG_FUNCTION_ARGS){
+  int i,
+      w = 14;
+  ISAXWORD *v1 = read_isax(PG_GETARG_CSTRING(0));
+  ISAXWORD *v2 = read_isax(PG_GETARG_CSTRING(1));
+  bool       *result = (bool*) palloc(sizeof(bool));
+
+  *result = true;
+  for (i=0; i < w; i+=1){
+    int value1 = (int)v1->elements[i].value;
+    int validbits1 = (int)v1->elements[i].validbits;
+    int value2 = (int)v2->elements[i].value;
+    int validbits2 = (int)v2->elements[i].validbits;
+
+    if(value1 != value2 || validbits1 != validbits2){
+      *result = false;
+    }
+  }
+  PG_RETURN_BOOL(*result);
+}
 
 PG_FUNCTION_INFO_V1(penalty_implementation);
 Datum penalty_implementation(PG_FUNCTION_ARGS);
