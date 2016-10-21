@@ -7,7 +7,9 @@
 #include "utils/lsyscache.h"
 #include "fmgr.h"
 #include "timeseries.h"
+//TODO: why are the functions not included ?
 #include "isax.h"
+#include "isax_gist.h"
 #include <float.h>
 #include <math.h>
 #include <string.h>
@@ -15,6 +17,9 @@
  * The functions here are written to conform with the Postgres function manager and
  * function-call interface. See http://doxygen.postgresql.org/fmgr_8h_source.html
  */
+
+char* write_isax(ISAXWORD* input);
+ISAXWORD* read_isax(char* input);
 
 PG_MODULE_MAGIC;
 
@@ -171,10 +176,6 @@ arrays_similar(PG_FUNCTION_ARGS)
 		nitems2 = ArrayGetNItems(ndims2, dims2);
 		check_nitems(nitems1, nitems2);
 
-		/* c.f. _int_same(PG_FUNCTION_ARGS) in contrib/intarray/_int_op.c */
-		/*
-		 * TODO: Implement checks
-		 */
     val1 = ARRPTR(v1);
     val2 = ARRPTR(v2);
     for(i=0; i<nitems1; i++)
@@ -244,10 +245,6 @@ array_dist(PG_FUNCTION_ARGS)
 		nitems2 = ArrayGetNItems(ndims2, dims2);
 		check_nitems(nitems1, nitems2);
 
-		/* c.f. _int_same(PG_FUNCTION_ARGS) in contrib/intarray/_int_op.c */
-		/*
-		 * TODO: Implement checks
-		 */
 		val1 = ARRPTR(v1);
 		val2 = ARRPTR(v2);
 		for(i=0; i<nitems1; i++)
@@ -299,7 +296,7 @@ ts_to_paa(PG_FUNCTION_ARGS)
   result = construct_array(c,w,FLOAT4OID, sizeof(float), true, 'i');
 
 	PG_RETURN_ARRAYTYPE_P(result);
-  free(c);
+  pfree(c);
 }
 
 PG_FUNCTION_INFO_V1(paa_to_isax);
@@ -310,46 +307,173 @@ paa_to_isax(PG_FUNCTION_ARGS)
 {
   int i, j,
       w = 14,
-      v,
-      l = 2 + w*8,
-      card = 256;
+      v = 0,
+      card = 256,
+      n = 8;
   float4* val;
   ArrayType* paa = (ArrayType*) PG_GETARG_ARRAYTYPE_P(0);
-  char* buffer;
-  char* result = palloc(l*sizeof(char));
+  ISAXWORD* isax = (ISAXWORD*) palloc(sizeof(ISAXWORD));
 
-  buffer = result;
-  *buffer = '{';
+  char* result;
+
 
   val = ARRPTR(paa); //Array pointer for paa
   for(i = 0 ; i < w; i += 1){
-
-    v = 0; //If the final result have v = 0, the formula for isax is wrong
-    // ISAXELEM* isaxelem;
-
     //Bottom breakpoint
     if(*val < saxbp[0]){
-    	v = 1;
+    	v = 0;
     }
     else{
     	for(j = 1; j<card-1; j += 1){
     		if (*val >= saxbp[j-1] && *val < saxbp[j]){
-    			v = j+1;
+    			v = j;
     			break;
     		}
     	}
     }
 
-    ++buffer;
-    buffer += sprintf(buffer, "%d:%d", v,card);
-    *buffer = ',';
+    isax->elements[i].value = (unsigned char) v;
+    isax->elements[i].validbits = (unsigned char) n;
 
     val++;
   }
-  *buffer = '}';
-  *(++buffer) = '\0';
+
+  result = write_isax(isax);
+
+  //TODO: check read_isax using this 2 lines
+  // isax = read_isax(result);
+  // result = write_isax(isax);
   PG_RETURN_CSTRING(result);
+  pfree(result);
 }
+
+//TODO: finish
+// PG_FUNCTION_INFO_V1(mindist_paa_isax);
+// Datum mindist_paa_isax(PG_FUNCTION_ARGS);
+//
+// Datum mindist_paa_isax(PG_FUNCTION_ARGS){
+//   float mindist = 0;
+// 	int i = 0,
+// 			n = 140,
+// 			w = 14;
+//   char* isaxbuffer = PG_GETARG_CSTRING(0);
+//   char* token;
+// 	ISAXWORD* isax = (ISAXWORD *) palloc(sizeof(ISAXWORD));
+//  ArrayType* key = PG_GETARG_ARRAYTYPE_P(1);
+// 	float4* tpaa = gist_isax_ts_to_paa(key);
+//
+// isax = read_isax(isaxbuffer);
+//
+//   //Main code
+// 	for(i = 1; i <= w; i +=1){
+// 		ISAXELEM* isaxelem = &isax->elements[i-1];
+// 		int v = ((int) isaxelem->value)+1,
+// 				card =  1 << ((int) isaxelem->validbits);
+// 		float beta_L = gist_isax_calc_lower_bp(v,card),
+// 					beta_U = gist_isax_calc_upper_bp(v,card),
+// 					delta;
+//
+// 		if(*tpaa < beta_L){
+// 			delta = beta_L - *tpaa;
+// 		}
+// 		else if (*tpaa > beta_U){
+// 			delta = *tpaa - beta_U;
+// 		}
+// 		else{
+// 			delta = 0;
+// 		}
+// 		mindist += delta * delta;
+//
+// 		tpaa++;
+// 	}
+//
+// 	mindist = sqrt((float)n/(float)w) * mindist;
+//   PG_RETURN_FLOAT4(mindist);
+// }
+
+//TODO: finish
+// PG_FUNCTION_INFO_V1(penalty_implementation);
+// Datum penalty_implementation(PG_FUNCTION_ARGS);
+//
+// Datum penalty_implementation(PG_FUNCTION_ARGS){
+//   float delta = 0;
+//   ISAXWORD* orig = read_isax(PG_GETARG_CSTRING(0));
+//   ISAXWORD* NEW = read_isax(PG_GETARG_CSTRING(1));
+//  	ISAXELEM* e_A = orig->elements;
+//  	ISAXELEM* e_B = new->elements;
+//  	int i,
+//  		 	w = 14;
+//
+//  	for (i = 0; i < w; i ){
+//  		int c_A, c_B;
+//  		c_A = 1 << ((int)e_A[i]->validbits) ;
+//  		c_B = 1 << ((int)e_B[i]->validbits) ;
+//  		delta += (c_B - c_A);
+//  	}
+//
+//  	PG_RETURN_FLOAT4(delta);
+// }
+
+//TODO: finish
+// PG_FUNCTION_INFO_V1(union_implementation);
+// Datum union_implementation(PG_FUNCTION_ARGS);
+//
+// Datum union_implementation(PG_FUNCTION_ARGS){
+//  int i, j;
+//  int bp_plus[w],
+// 	bp_minus[w],
+//  ISAXWORD* result = palloc(sizeof(ISAXWORD));
+//
+// //Initializing
+// for(i =0; i < w; i+=1){
+// 	bp_plus[i] = 0;
+// 	bp_minus[i = 255;
+// }
+//
+// //Getting bp's for left
+// for (i = 0; i < w; i+=1){
+// 	int bp = (int)left->elements[i].value ;
+// 	bp_plus[i] = bp_plus[i] > bp ? bp_plus[i] : bp; //max(bp_plus[i], bp)
+// 	bp_minus[i] = bp_minus[i] < bp ? bp_minus[i] : bp; //min(bp_minus[i], bp)
+// }
+//
+// //Getting bp's for right
+// for (i = 0; i < w; i+=1){
+// 	int bp = (int)right->elements[i].value ;
+// 	bp_plus[i] = bp_plus[i] > bp ? bp_plus[i] : bp; //max(bp_plus[i], bp)
+// 	bp_minus[i] = bp_minus[i] < bp ? bp_minus[i] : bp; //min(bp_minus[i], bp)
+// }
+//
+// //Getting result
+// for (i = 0; i < w; i+=1){
+// 	int v,
+// 			tmp_plus = bp_plus[i],
+// 			tmp_minus = bp_minus[i],
+// 	 		n,
+// 			done = 0;
+// 	ISAXELEM* isaxelem;
+//
+// 	while(done == 0){
+// 		if (tmp_plus == tmp_minus){
+// 			done = 1;
+// 		}
+// 		else{
+// 			tmp_plus >> 1;
+// 			tmp_minus >> 1
+// 		}
+// 	}
+//
+// 	while(tmp_plus != 0){
+// 		tmp_plus>>1;
+// 		++n;
+// 	}
+// 	//TODO: what is v ? Answer: common bin
+// 	isaxelem->value = (unsigned char)v;
+// 	isaxelem->validbits = (unsigned char)n;
+// 	result->elements[i] = isaxelem;
+// }
+// PG_RETURN_CSTRING(result);
+// }
 
 PG_FUNCTION_INFO_V1(calc_lower_bp);
 Datum calc_lower_bp(PG_FUNCTION_ARGS);
@@ -384,4 +508,53 @@ calc_upper_bp(PG_FUNCTION_ARGS){
 	bp = saxbp[v*mult -1];
 
   PG_RETURN_FLOAT4(bp);
+}
+
+// TODO: finish
+ISAXWORD*
+read_isax(char* input){
+  ISAXWORD* result = (ISAXWORD*) palloc(sizeof(ISAXWORD));
+  int i = 0;
+  char* buffer;
+  const char s[2] = ",";
+  const char end[2] = "}";
+  char* token;
+
+  strcpy(buffer, input);
+  buffer++;
+  while (( token = strtok(buffer, s) )){
+    ISAXELEM* isaxelem = (ISAXELEM*) palloc(sizeof(ISAXELEM));
+
+    token = strtok(token, end);
+    read_isex_elem(token, isaxelem);
+    result->elements[i] = *isaxelem;
+    i++;
+  }
+
+  return(result);
+}
+
+char*
+write_isax(ISAXWORD* input){
+  int i,
+      v,
+      card,
+      w = 14,
+      l = 2 + w*8;
+  char* buffer;
+  char* result = (char*) palloc(l*sizeof(char));
+
+  buffer = result;
+  *buffer = '{';
+
+  for(i = 0; i < w; i+=1){
+    v = (int)input->elements[i].value;
+    card = 1 << ((int)input->elements[i].validbits);
+    ++buffer;
+    buffer += sprintf(buffer, "%d:%d", v,card);
+    *buffer = ',';
+  }
+  *buffer = '}';
+  *(++buffer) = '\0';
+  return(result);
 }

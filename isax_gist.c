@@ -36,7 +36,7 @@ gist_isax_consistent(PG_FUNCTION_ARGS)
 		 retval = false;
 	 }
 	 else{
-		 if(mindist_paa_isax(key, query) <= distance_threshold){
+		 if(gist_isax_mindist_paa_isax(key, query) <= distance_threshold){
 			 retval = true;
 		 }
 		 else {
@@ -50,7 +50,6 @@ gist_isax_consistent(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(retval);
 }
 
-//TODO: explain
 PG_FUNCTION_INFO_V1(gist_isax_union);
 
 Datum
@@ -72,8 +71,8 @@ gist_isax_union(PG_FUNCTION_ARGS)
 	{
 		out = data_type_deep_copy(tmp);
 
-		//TODO: PG_RETURN_DATA_TYPE_P not found in doxygen.postgressql.org
-		PG_RETURN_DATA_TYPE_P(out);
+		//PG_RETURN_POINTER instead
+		PG_RETURN_POINTER(out);
 	}
 
 	for (i = 1; i < numranges; i++)
@@ -83,7 +82,7 @@ gist_isax_union(PG_FUNCTION_ARGS)
 		out = gist_isax_union_implementation(out, tmp);
 	}
 
-	PG_RETURN_DATA_TYPE_P(out);
+	PG_RETURN_POINTER(out);
 }
 
 PG_FUNCTION_INFO_V1(gist_isax_compress);
@@ -120,7 +119,6 @@ gist_isax_compress(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(gist_isax_decompress);
 
-//TODO: do I need to change decompress ?
 Datum
 gist_isax_decompress(PG_FUNCTION_ARGS)
 {
@@ -135,7 +133,6 @@ gist_isax_penalty(PG_FUNCTION_ARGS)
 	GISTENTRY  *origentry = (GISTENTRY *) PG_GETARG_POINTER(0);
 	GISTENTRY  *newentry = (GISTENTRY *) PG_GETARG_POINTER(1);
 	float      *penalty = (float *) PG_GETARG_POINTER(2);
-	//TODO: is this ISAXWORD or ArrayType
 	ISAXWORD  *orig = (ISAXWORD*) DatumGetDataType(origentry->key);
 	ISAXWORD  *new = (ISAXWORD*) DatumGetDataType(newentry->key);
 
@@ -143,7 +140,6 @@ gist_isax_penalty(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(penalty);
 }
 
-//TODO: explain
 PG_FUNCTION_INFO_V1(gist_isax_picksplit);
 
 Datum
@@ -196,8 +192,8 @@ gist_isax_picksplit(PG_FUNCTION_ARGS)
 		int real_index = raw_entryvec[i] - entryvec->vector,
 				j;
 
-
 		//TODO: Is tmp_union e in E  or iSAX key of e ?
+		//Picksplit: go through all values and decide where to split
 		tmp_union = DatumGetDataType(entryvec->vector[real_index].key);
 		Assert(tmp_union != NULL);
 
@@ -217,6 +213,20 @@ gist_isax_picksplit(PG_FUNCTION_ARGS)
 			 bp_plus[j] = bp_plus[j] > bp ? bp_plus[j] : bp; //max(bp_plus, bp)
 			 bp_minus[j] = bp_minus[j] < bp ? bp_minus[j] : bp; //min(bp_plus, bp)
 		 }
+	}
+
+	//Getting t (the split breakpoint)
+
+	//Choosing which side to split
+	for (i = FirstOffsetNumber; i <= maxoff; i = OffsetNumberNext(i))
+	{
+		int real_index = raw_entryvec[i] - entryvec->vector,
+				j;
+
+		//TODO: Is tmp_union e in E  or iSAX key of e ?
+		//Picksplit: go through all values and decide where to split
+		tmp_union = DatumGetDataType(entryvec->vector[real_index].key);
+		Assert(tmp_union != NULL);
 
 		if (gist_isax_choice_is_left(unionL, curl, unionR, curr))
 		{
@@ -247,7 +257,7 @@ gist_isax_picksplit(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(v);
 }
 
-//TODO: do I need to change same and distance ?
+//TODO: do I need to change same and distance ? Answer: no
 PG_FUNCTION_INFO_V1(gist_isax_same);
 
 Datum
@@ -261,6 +271,7 @@ gist_isax_same(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
+//Dont need to declare
 PG_FUNCTION_INFO_V1(gist_isax_distance);
 
 Datum
@@ -350,9 +361,8 @@ gist_isax_paa_to_isax(float4* paa){
 	return(isax);
 }
 
-//TODO: find out if query is a timeseries or paa rep of a timeseries
 double
-mindist_paa_isax(ISAXWORD* entry, ArrayType* key){
+gist_isax_mindist_paa_isax(ISAXWORD* entry, ArrayType* key){
 	double mindist = 0;
 	int i = 0,
 			n = 140,
@@ -361,12 +371,12 @@ mindist_paa_isax(ISAXWORD* entry, ArrayType* key){
 	ISAXWORD* isax = entry;
 	float4* tpaa = gist_isax_ts_to_paa(key);
 
-	for(i = 1, i <= w, i +=1){
-		ISAXELEM* isaxelem = isax->elements[i-1];
+	for(i = 1; i <= w; i +=1){
+		ISAXELEM* isaxelem = &isax->elements[i-1];
 		int v = ((int) isaxelem->value)+1,
 				card =  1 << ((int) isaxelem->validbits);
-		float beta_L = calc_lower_bp(v,card),
-					beta_U = calc_upper_bp(v,card),
+		float beta_L = gist_isax_calc_lower_bp(v,card),
+					beta_U = gist_isax_calc_upper_bp(v,card),
 					delta;
 
 		if(*tpaa < beta_L){
@@ -383,7 +393,7 @@ mindist_paa_isax(ISAXWORD* entry, ArrayType* key){
 		tpaa++;
 	}
 
-	adjust = sqrt(float(n)/float(w));
+	adjust = sqrt((float)n/(float)w);
 	mindist = mindist * adjust;
 	return(mindist);
 }
@@ -394,7 +404,6 @@ gist_isax_union_implementation(ISAXWORD* left,ISAXWORD* right){
 	int bp_plus[w],
 			bp_minus[w],
 	ISAXWORD* result = palloc(sizeof(ISAXWORD));
-
 
 	//Initializing
 	for(i =0; i < w; i+=1){
@@ -439,7 +448,7 @@ gist_isax_union_implementation(ISAXWORD* left,ISAXWORD* right){
 			tmp_plus>>1;
 			++n;
 		}
-		//TODO: what is v ?
+		//TODO: what is v ? Answer: common bin
 		isaxelem->value = (unsigned char)v;
 		isaxelem->validbits = (unsigned char)n;
 		result->elements[i] = isaxelem;
@@ -450,11 +459,8 @@ gist_isax_union_implementation(ISAXWORD* left,ISAXWORD* right){
 float
 gist_isax_penalty_implementation(ISAXWORD* orig, ISAXWORD* new ){
 	float delta = 0;
-	ISAXWORD A = *orig,
-					 B = *orig;
-	//TODO: Get isax key from orig and new and put it into A and B. Find out the type of orig and new first
-	ISAXELEM e_A[] = A->elements;
-	ISAXELEM e_B[] = B->elements;
+	ISAXELEM* e_A = orig->elements;
+	ISAXELEM* e_B = new->elements;
 	int i,
 		 	w = 14;
 
@@ -469,7 +475,7 @@ gist_isax_penalty_implementation(ISAXWORD* orig, ISAXWORD* new ){
 }
 
 float
-calc_lower_bp(int v, int card){
+gist_isax_calc_lower_bp(int v, int card){
 	//Assume that card is a demoninator of 256
 	int mult = 256/card;
 	float bp;
@@ -485,7 +491,7 @@ calc_lower_bp(int v, int card){
 }
 
 float
-calc_upper_bp(int v, int card){
+gist_isax_calc_upper_bp(int v, int card){
 	//Assume that card is a demoninator of 256
 	int mult = 256/card;
 	float bp;

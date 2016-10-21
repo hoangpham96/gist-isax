@@ -33,5 +33,6 @@ typedef struct ISAXWORD {
 	ISAXELEM elements[ISAXWORDLENGTH];
 } ISAXWORD;
 
+void read_isex_elem(char* str, ISAXELEM* result );
 
 #endif /* __ISAX_H__ */
