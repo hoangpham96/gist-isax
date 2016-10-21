@@ -1,3 +1,4 @@
+
 CREATE TABLE isax_elem_test (isaxvalue isaxelem);
 
 INSERT INTO isax_elem_test(isaxvalue) VALUES ('1:1') RETURNING isaxvalue;

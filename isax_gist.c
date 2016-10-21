@@ -26,6 +26,7 @@ float gist_isax_calc_lower_bp(int v, int card);
 float gist_isax_calc_upper_bp(int v, int card);
 
 PG_FUNCTION_INFO_V1(gist_isax_consistent);
+Datum gist_isax_consistent(PG_FUNCTION_ARGS);
 
 Datum
 gist_isax_consistent(PG_FUNCTION_ARGS)
@@ -65,6 +66,7 @@ gist_isax_consistent(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(gist_isax_union);
+Datum gist_isax_union(PG_FUNCTION_ARGS);
 
 Datum
 gist_isax_union(PG_FUNCTION_ARGS)
@@ -95,6 +97,7 @@ gist_isax_union(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(gist_isax_compress);
+Datum gist_isax_compress(PG_FUNCTION_ARGS);
 
 Datum
 gist_isax_compress(PG_FUNCTION_ARGS)
@@ -128,6 +131,7 @@ gist_isax_compress(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(gist_isax_decompress);
+Datum gist_isax_decompress(PG_FUNCTION_ARGS);
 
 Datum
 gist_isax_decompress(PG_FUNCTION_ARGS)
@@ -136,6 +140,7 @@ gist_isax_decompress(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(gist_isax_penalty);
+Datum gist_isax_penalty(PG_FUNCTION_ARGS);
 
 Datum
 gist_isax_penalty(PG_FUNCTION_ARGS)
@@ -151,6 +156,7 @@ gist_isax_penalty(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(gist_isax_picksplit);
+Datum gist_isax_picksplit(PG_FUNCTION_ARGS);
 
 Datum
 gist_isax_picksplit(PG_FUNCTION_ARGS)
@@ -289,6 +295,7 @@ gist_isax_picksplit(PG_FUNCTION_ARGS)
 
 //TODO: do I need to change same and distance ? Answer: no
 PG_FUNCTION_INFO_V1(gist_isax_same);
+Datum gist_isax_same(PG_FUNCTION_ARGS);
 
 Datum
 gist_isax_same(PG_FUNCTION_ARGS)
