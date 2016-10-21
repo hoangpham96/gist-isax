@@ -303,8 +303,8 @@ gist_isax_ts_to_paa(ArrayType* key){
   ArrayType* ts;
 	float4* result;
 
-  float4 c[w]; //Use for computation of result. Using this just to be sure there's no error.
   float4* val; //Array pointer for ts
+	float4* val_res; //Array pointer for result
 
 	ts = key;
 
@@ -313,16 +313,16 @@ gist_isax_ts_to_paa(ArrayType* key){
   n = ArrayGetNItems(ndims,dims);
 
   val = ARRPTR(ts);
+	val_res = ARRPTR(result);
   for(i = 1 ; i <= w; i+=1){
-    c[i-1] = 0;
+    float4 sum = 0;
     for(j = n/w * (i-1)+1; j <= n/w * i; j+=1){
-      c[i-1] += *val;
+      sum += *val;
       val++;
     }
-    c[i-1] = (float)w/(float)n * c[i-1];
+    *val_res = (float)w/(float)n * sum;
+		val_res++;
   }
-
-	result = c;
 
 	return result;
 }
@@ -334,29 +334,29 @@ gist_isax_paa_to_isax(float4* paa){
 	int i = 0,
 			w = 14,
 			v,
+			card = 256,
 			n = 8;
-	float4 c[w] = paa;
+	ISAXWORD* isax = (ISAXWORD*) palloc(sizeof(ISAXWORD));
 
 	for(i = 0 ; i < w; i += 1){
 		ISAXELEM* isaxelem;
 		//Bottom breakpoint
-		if(c[i]<saxbp[0]){
-			v = 1;
+		if(*paa<saxbp[0]){
+			v = 0;
 		}
 		else{
-			for(j = 1; j<card-1; j += 1){
-				if (c[i] >= saxbp[j-1] && c[i] < saxbp[j]){
-					v = j+1;
+			for(j = 1; j < card-1; j += 1){
+				if (*paa >= saxbp[j-1] && *paa < saxbp[j]){
+					v = j;
 					break;
 				}
 			}
 		}
 
-		//Unsigned char only goes from 0-255 so v has to be -1;
-		isaxelem->value = (unsigned char)(v-1);
-		isaxelem->validbits = (unsigned char)(n);
+		isax->elements[i].value = (unsigned char)(v);
+		isax->elements[i].validbits = (unsigned char)(n);
 
-		isax->elements[i] = *isaxelem;
+		paa++;
 	}
 	return(isax);
 }
@@ -373,7 +373,7 @@ gist_isax_mindist_paa_isax(ISAXWORD* entry, ArrayType* key){
 
 	for(i = 1; i <= w; i +=1){
 		ISAXELEM* isaxelem = &isax->elements[i-1];
-		int v = ((int) isaxelem->value)+1,
+		int v = ((int) isaxelem->value),
 				card =  1 << ((int) isaxelem->validbits);
 		float beta_L = gist_isax_calc_lower_bp(v,card),
 					beta_U = gist_isax_calc_upper_bp(v,card),
@@ -400,64 +400,58 @@ gist_isax_mindist_paa_isax(ISAXWORD* entry, ArrayType* key){
 
 ISAXWORD*
 gist_isax_union_implementation(ISAXWORD* left,ISAXWORD* right){
-	int i, j;
-	int bp_plus[w],
-			bp_minus[w],
-	ISAXWORD* result = palloc(sizeof(ISAXWORD));
+	int i,
+      w = 14;
+  int bp_left[w],
+      bp_right[w],
+      n_left[w],
+      n_right[w];
+  ISAXWORD* result = (ISAXWORD*) palloc(sizeof(ISAXWORD));
 
-	//Initializing
-	for(i =0; i < w; i+=1){
-		bp_plus[i] = 0;
-		bp_minus[i = 255;
-	}
+  //Initializing
+  for(i =0; i < w; i+=1){
+    bp_left[i] = (int)left->elements[i].value;
+    n_left[i] = (int)left->elements[i].validbits;
+    bp_right[i] = (int)right->elements[i].value;
+    n_right[i] = (int)right->elements[i].validbits;
+  }
 
-	//Getting bp's for left
-	for (i = 0; i < w; i+=1){
-		int bp = (int)left->elements[i].value ;
-		bp_plus[i] = bp_plus[i] > bp ? bp_plus[i] : bp; //max(bp_plus[i], bp)
-		bp_minus[i] = bp_minus[i] < bp ? bp_minus[i] : bp; //min(bp_minus[i], bp)
-	}
+  //Getting result
+  for (i = 0; i < w; i+=1){
+  	int tmp_left = bp_left[i],
+        tmp_right = bp_right[i],
+        union_val,
+        union_bits = 0;
 
-	//Getting bp's for right
-	for (i = 0; i < w; i+=1){
-		int bp = (int)right->elements[i].value ;
-		bp_plus[i] = bp_plus[i] > bp ? bp_plus[i] : bp; //max(bp_plus[i], bp)
-		bp_minus[i] = bp_minus[i] < bp ? bp_minus[i] : bp; //min(bp_minus[i], bp)
-	}
+    //Equivalating validbits
+    if(n_right[i] > n_left[i]){
+      tmp_right = tmp_right >> (n_right[i] - n_left[i]);
+    }
+    else if (n_right[i] < n_left[i]){
+      tmp_left = tmp_left >> (n_left[i] - n_right[i]);
+    }
 
-	//Getting result
-	for (i = 0; i < w; i+=1){
-		int v,
-				tmp_plus = bp_plus[i],
-				tmp_minus = bp_minus[i],
-		 		n,
-				done = 0;
-		ISAXELEM* isaxelem;
+    while(tmp_left != tmp_right){
+      tmp_left = tmp_left >> 1;
+      tmp_right = tmp_right >> 1;
+    }
 
-		while(done == 0){
-			if (tmp_plus == tmp_minus){
-				done = 1;
-			}
-			else{
-				tmp_plus >> 1;
-				tmp_minus >> 1
-			}
-		}
+    union_val = tmp_left;
 
-		while(tmp_plus != 0){
-			tmp_plus>>1;
-			++n;
-		}
-		//TODO: what is v ? Answer: common bin
-		isaxelem->value = (unsigned char)v;
-		isaxelem->validbits = (unsigned char)n;
-		result->elements[i] = isaxelem;
-	}
+    while(tmp_left > 0){
+      tmp_left = tmp_left >> 1;
+      union_bits++;
+    }
+
+  	result->elements[i].value = (unsigned char) union_val;
+    result->elements[i].validbits = (unsigned char)union_bits;
+  }
 	return(result);
 }
 
 float
 gist_isax_penalty_implementation(ISAXWORD* orig, ISAXWORD* new ){
+
 	float delta = 0;
 	ISAXELEM* e_A = orig->elements;
 	ISAXELEM* e_B = new->elements;
@@ -476,15 +470,14 @@ gist_isax_penalty_implementation(ISAXWORD* orig, ISAXWORD* new ){
 
 float
 gist_isax_calc_lower_bp(int v, int card){
-	//Assume that card is a demoninator of 256
 	int mult = 256/card;
 	float bp;
 
-	if(v == 1){
+	if(v == 0){
 		bp = -100;
 	}
 	else{
-		bp = saxbp[(v-1)*mult -1];
+		bp = saxbp[(v)*mult -1];
 	}
 
 	return(bp);
@@ -496,7 +489,7 @@ gist_isax_calc_upper_bp(int v, int card){
 	int mult = 256/card;
 	float bp;
 
-	bp = saxbp[v*mult -1];
+	bp = saxbp[(v+1)*mult -1];
 
 	return(bp);
 }

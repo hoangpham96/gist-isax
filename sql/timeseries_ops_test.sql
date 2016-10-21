@@ -75,11 +75,13 @@ SELECT '{0,0,0}'::real[] % '{0,0,0.1}'::real[];
 SELECT '{0,0,0.1}'::real[] % '{0,0,0}'::real[];
 
 --Testing calc_lower_bp
-SELECT calc_lower_bp(256,256);
+SELECT calc_lower_bp(0,256);
+SELECT calc_lower_bp(255,256);
 SELECT calc_lower_bp(2,128);
 
 --Testing calc_lower_bp
-SELECT calc_upper_bp(256,256);
+SELECT calc_upper_bp(0,256);
+SELECT calc_upper_bp(255,256);
 SELECT calc_upper_bp(2,128);
 
 --Copy ECG5000 data to table test_ecg
@@ -108,3 +110,7 @@ SELECT * FROM isax_test;
 
 --Testing penalty_implementation. Should be -(14 * 128) = -1792
 SELECT penalty_implementation('{1:256,1:256,1:256,1:256,1:256,1:256,1:256,1:256,1:256,1:256,1:256,1:256,1:256,1:256}','{1:128,1:128,1:128,1:128,1:128,1:128,1:128,1:128,1:128,1:128,1:128,1:128,1:128,1:128}');
+
+--Testing union_implementation. Should be arrays of 127:128 and 63:64
+SELECT union_implementation('{254:256,254:256,254:256,254:256,254:256,254:256,254:256,254:256,254:256,254:256,254:256,254:256,254:256,254:256}','{255:256,255:256,255:256,255:256,255:256,255:256,255:256,255:256,255:256,255:256,255:256,255:256,255:256,255:256}');
+SELECT union_implementation('{254:256,254:256,254:256,254:256,254:256,254:256,254:256,254:256,254:256,254:256,254:256,254:256,254:256,254:256}','{126:128,126:128,126:128,126:128,126:128,126:128,126:128,126:128,126:128,126:128,126:128,126:128,126:128,126:128}');

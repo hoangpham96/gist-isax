@@ -7,7 +7,6 @@
 #include "utils/lsyscache.h"
 #include "fmgr.h"
 #include "timeseries.h"
-//TODO: why are the functions not included ?
 #include "isax.h"
 #include "isax_gist.h"
 #include <float.h>
@@ -17,9 +16,8 @@
  * The functions here are written to conform with the Postgres function manager and
  * function-call interface. See http://doxygen.postgresql.org/fmgr_8h_source.html
  */
-
-char* write_isax(ISAXWORD* input);
-ISAXWORD* read_isax(char* input);
+ char* write_isax(ISAXWORD* input);
+ ISAXWORD* read_isax(char* input);
 
 PG_MODULE_MAGIC;
 
@@ -353,9 +351,8 @@ paa_to_isax(PG_FUNCTION_ARGS)
 // 			n = 140,
 // 			w = 14;
 //   char* isaxbuffer = PG_GETARG_CSTRING(0);
-//   char* token;
 // 	ISAXWORD* isax = (ISAXWORD *) palloc(sizeof(ISAXWORD));
-//  ArrayType* key = PG_GETARG_ARRAYTYPE_P(1);
+//   ArrayType* key = PG_GETARG_ARRAYTYPE_P(1);
 // 	float4* tpaa = gist_isax_ts_to_paa(key);
 //
 // isax = read_isax(isaxbuffer);
@@ -387,7 +384,7 @@ paa_to_isax(PG_FUNCTION_ARGS)
 //   PG_RETURN_FLOAT4(mindist);
 // }
 
-//TODO: finish
+
 PG_FUNCTION_INFO_V1(penalty_implementation);
 Datum penalty_implementation(PG_FUNCTION_ARGS);
 
@@ -407,69 +404,64 @@ Datum penalty_implementation(PG_FUNCTION_ARGS){
  		delta += (c_B - c_A);
  	}
 
- 	PG_RETURN_FLOAT4(delta);
+ PG_RETURN_FLOAT4(delta);
 }
 
-//TODO: finish
-// PG_FUNCTION_INFO_V1(union_implementation);
-// Datum union_implementation(PG_FUNCTION_ARGS);
-//
-// Datum union_implementation(PG_FUNCTION_ARGS){
-//  int i, j;
-//  int bp_plus[w],
-// 	bp_minus[w],
-//  ISAXWORD* result = palloc(sizeof(ISAXWORD));
-//
-// //Initializing
-// for(i =0; i < w; i+=1){
-// 	bp_plus[i] = 0;
-// 	bp_minus[i = 255;
-// }
-//
-// //Getting bp's for left
-// for (i = 0; i < w; i+=1){
-// 	int bp = (int)left->elements[i].value ;
-// 	bp_plus[i] = bp_plus[i] > bp ? bp_plus[i] : bp; //max(bp_plus[i], bp)
-// 	bp_minus[i] = bp_minus[i] < bp ? bp_minus[i] : bp; //min(bp_minus[i], bp)
-// }
-//
-// //Getting bp's for right
-// for (i = 0; i < w; i+=1){
-// 	int bp = (int)right->elements[i].value ;
-// 	bp_plus[i] = bp_plus[i] > bp ? bp_plus[i] : bp; //max(bp_plus[i], bp)
-// 	bp_minus[i] = bp_minus[i] < bp ? bp_minus[i] : bp; //min(bp_minus[i], bp)
-// }
-//
-// //Getting result
-// for (i = 0; i < w; i+=1){
-// 	int v,
-// 			tmp_plus = bp_plus[i],
-// 			tmp_minus = bp_minus[i],
-// 	 		n,
-// 			done = 0;
-// 	ISAXELEM* isaxelem;
-//
-// 	while(done == 0){
-// 		if (tmp_plus == tmp_minus){
-// 			done = 1;
-// 		}
-// 		else{
-// 			tmp_plus >> 1;
-// 			tmp_minus >> 1
-// 		}
-// 	}
-//
-// 	while(tmp_plus != 0){
-// 		tmp_plus>>1;
-// 		++n;
-// 	}
-// 	//TODO: what is v ? Answer: common bin
-// 	isaxelem->value = (unsigned char)v;
-// 	isaxelem->validbits = (unsigned char)n;
-// 	result->elements[i] = isaxelem;
-// }
-// PG_RETURN_CSTRING(result);
-// }
+// TODO: finish
+PG_FUNCTION_INFO_V1(union_implementation);
+Datum union_implementation(PG_FUNCTION_ARGS);
+
+Datum union_implementation(PG_FUNCTION_ARGS){
+  int i,
+      w = 14;
+  int bp_left[w],
+      bp_right[w],
+      n_left[w],
+      n_right[w];
+  ISAXWORD* left = read_isax(PG_GETARG_CSTRING(0));
+  ISAXWORD* right = read_isax(PG_GETARG_CSTRING(1));
+  ISAXWORD* result = (ISAXWORD*) palloc(sizeof(ISAXWORD));
+
+  //Initializing
+  for(i =0; i < w; i+=1){
+    bp_left[i] = (int)left->elements[i].value;
+    n_left[i] = (int)left->elements[i].validbits;
+    bp_right[i] = (int)right->elements[i].value;
+    n_right[i] = (int)right->elements[i].validbits;
+  }
+
+  //Getting result
+  for (i = 0; i < w; i+=1){
+  	int tmp_left = bp_left[i],
+        tmp_right = bp_right[i],
+        union_val,
+        union_bits = 0;
+
+    //Equivalating validbits
+    if(n_right[i] > n_left[i]){
+      tmp_right = tmp_right >> (n_right[i] - n_left[i]);
+    }
+    else if (n_right[i] < n_left[i]){
+      tmp_left = tmp_left >> (n_left[i] - n_right[i]);
+    }
+
+    while(tmp_left != tmp_right){
+      tmp_left = tmp_left >> 1;
+      tmp_right = tmp_right >> 1;
+    }
+
+    union_val = tmp_left;
+
+    while(tmp_left > 0){
+      tmp_left = tmp_left >> 1;
+      union_bits++;
+    }
+
+  	result->elements[i].value = (unsigned char) union_val;
+    result->elements[i].validbits = (unsigned char)union_bits;
+  }
+  PG_RETURN_CSTRING(write_isax(result));
+}
 
 PG_FUNCTION_INFO_V1(calc_lower_bp);
 Datum calc_lower_bp(PG_FUNCTION_ARGS);
@@ -481,11 +473,11 @@ calc_lower_bp(PG_FUNCTION_ARGS){
   int mult = 256/card;
   float bp;
 
-  if(v == 1){
+  if(v == 0){
     bp = -100;
   }
   else{
-    bp = saxbp[(v-1)*mult -1];
+    bp = saxbp[v*mult -1];
   }
 
   PG_RETURN_FLOAT4(bp);
@@ -501,12 +493,11 @@ calc_upper_bp(PG_FUNCTION_ARGS){
   int mult = 256/card;
 	float bp;
 
-	bp = saxbp[v*mult -1];
+	bp = saxbp[(v+1)*mult -1];
 
   PG_RETURN_FLOAT4(bp);
 }
 
-// TODO: finish
 ISAXWORD*
 read_isax(char* input){
   ISAXWORD* result = (ISAXWORD*) palloc(sizeof(ISAXWORD));

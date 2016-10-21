@@ -10,4 +10,5 @@
 
 extern double distance_threshold;
 
+
 #endif /* __TIMESERIES_H__ */

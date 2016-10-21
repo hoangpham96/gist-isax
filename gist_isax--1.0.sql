@@ -38,6 +38,11 @@ RETURNS real
 AS 'MODULE_PATHNAME'
 LANGUAGE C STRICT;
 
+CREATE FUNCTION union_implementation(cstring, cstring)
+RETURNS cstring
+AS 'MODULE_PATHNAME'
+LANGUAGE C STRICT;
+
 --End of test functions
 
 CREATE OPERATOR % (LEFTARG = anyarray, RIGHTARG = anyarray, PROCEDURE = arrays_similar);
