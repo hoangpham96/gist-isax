@@ -388,27 +388,27 @@ paa_to_isax(PG_FUNCTION_ARGS)
 // }
 
 //TODO: finish
-// PG_FUNCTION_INFO_V1(penalty_implementation);
-// Datum penalty_implementation(PG_FUNCTION_ARGS);
-//
-// Datum penalty_implementation(PG_FUNCTION_ARGS){
-//   float delta = 0;
-//   ISAXWORD* orig = read_isax(PG_GETARG_CSTRING(0));
-//   ISAXWORD* NEW = read_isax(PG_GETARG_CSTRING(1));
-//  	ISAXELEM* e_A = orig->elements;
-//  	ISAXELEM* e_B = new->elements;
-//  	int i,
-//  		 	w = 14;
-//
-//  	for (i = 0; i < w; i ){
-//  		int c_A, c_B;
-//  		c_A = 1 << ((int)e_A[i]->validbits) ;
-//  		c_B = 1 << ((int)e_B[i]->validbits) ;
-//  		delta += (c_B - c_A);
-//  	}
-//
-//  	PG_RETURN_FLOAT4(delta);
-// }
+PG_FUNCTION_INFO_V1(penalty_implementation);
+Datum penalty_implementation(PG_FUNCTION_ARGS);
+
+Datum penalty_implementation(PG_FUNCTION_ARGS){
+  float delta = 0;
+  ISAXWORD* orig = read_isax(PG_GETARG_CSTRING(0));
+  ISAXWORD* new = read_isax(PG_GETARG_CSTRING(1));
+ 	ISAXELEM* e_A = orig->elements;
+ 	ISAXELEM* e_B = new->elements;
+ 	int i,
+ 		 	w = 14;
+
+ 	for (i = 0; i < w; i += 1){
+ 		int c_A, c_B;
+ 		c_A = 1 << ((int)e_A[i].validbits) ;
+ 		c_B = 1 << ((int)e_B[i].validbits) ;
+ 		delta += (c_B - c_A);
+ 	}
+
+ 	PG_RETURN_FLOAT4(delta);
+}
 
 //TODO: finish
 // PG_FUNCTION_INFO_V1(union_implementation);

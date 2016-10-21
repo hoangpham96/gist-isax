@@ -102,6 +102,9 @@ SELECT paa_to_isax(signal_paa) FROM test_ecg_paa WHERE id =1 ;
 
 --Testing isax
 CREATE TABLE isax_test(id SERIAL PRIMARY KEY, signal_isax isax);
--- INSERT INTO isax_test(signal_isax) SELECT paa_to_isax(signal_paa)::isax FROM test_ecg_paa;
-INSERT INTO isax_test(signal_isax) VALUES ('{2:256,90:256,81:256,66:256,111:256,147:256,175:256,189:256,173:256,168:256,245:256,142:256,99:256,177:256}');
+-- INSERT INTO isax_test(signal_isax) values (cast((SELECT paa_to_isax(signal_paa) FROM test_ecg_paa) as cstring));
+INSERT INTO isax_test(signal_isax) VALUES ('{1:256,89:256,80:256,65:256,110:256,146:256,174:256,188:256,172:256,167:256,244:256,141:256,98:256,176:256}');
 SELECT * FROM isax_test;
+
+--Testing penalty_implementation. Should be -(14 * 128) = -1792
+SELECT penalty_implementation('{1:256,1:256,1:256,1:256,1:256,1:256,1:256,1:256,1:256,1:256,1:256,1:256,1:256,1:256}','{1:128,1:128,1:128,1:128,1:128,1:128,1:128,1:128,1:128,1:128,1:128,1:128,1:128,1:128}');

@@ -11,6 +11,8 @@ RETURNS bool
 AS 'MODULE_PATHNAME'
 LANGUAGE C STRICT;
 
+-- Beginning of test functions
+
 CREATE FUNCTION ts_to_paa(anyarray)
 RETURNS anyarray
 AS 'MODULE_PATHNAME'
@@ -30,6 +32,13 @@ CREATE FUNCTION calc_upper_bp(int, int)
 RETURNS real
 AS 'MODULE_PATHNAME'
 LANGUAGE C STRICT;
+
+CREATE FUNCTION penalty_implementation(cstring, cstring)
+RETURNS real
+AS 'MODULE_PATHNAME'
+LANGUAGE C STRICT;
+
+--End of test functions
 
 CREATE OPERATOR % (LEFTARG = anyarray, RIGHTARG = anyarray, PROCEDURE = arrays_similar);
 

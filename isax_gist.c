@@ -462,12 +462,12 @@ gist_isax_penalty_implementation(ISAXWORD* orig, ISAXWORD* new ){
 	ISAXELEM* e_A = orig->elements;
 	ISAXELEM* e_B = new->elements;
 	int i,
-		 	w = 14;
+			w = 14;
 
-	for (i = 0; i < w; i ){
+	for (i = 0; i < w; i += 1){
 		int c_A, c_B;
-		c_A = 1 << ((int)e_A[i]->validbits) ;
-		c_B = 1 << ((int)e_B[i]->validbits) ;
+		c_A = 1 << ((int)e_A[i].validbits) ;
+		c_B = 1 << ((int)e_B[i].validbits) ;
 		delta += (c_B - c_A);
 	}
 
