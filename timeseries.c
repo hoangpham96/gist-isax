@@ -339,10 +339,6 @@ paa_to_isax(PG_FUNCTION_ARGS)
   }
 
   result = write_isax(isax);
-
-  //TODO: check read_isax using this 2 lines
-  // isax = read_isax(result);
-  // result = write_isax(isax);
   PG_RETURN_CSTRING(result);
   pfree(result);
 }
@@ -514,18 +510,25 @@ calc_upper_bp(PG_FUNCTION_ARGS){
 ISAXWORD*
 read_isax(char* input){
   ISAXWORD* result = (ISAXWORD*) palloc(sizeof(ISAXWORD));
-  int i = 0;
-  char* buffer;
-  const char s[2] = ",";
-  const char end[2] = "}";
+  int i = 0,
+      len;
+  char *str, *str2,
+       *pch;
   char* token;
+  const char s[2] = ",";
 
-  strcpy(buffer, input);
-  buffer++;
-  while (( token = strtok(buffer, s) )){
+  str = input;
+
+  pch =  strchr(str,'}');
+  len = pch - str - 1;
+  str2 = palloc(len+1);
+  strncpy(str2,str+1,len);
+  *(str2+len) = '\0';
+  pch = str2;
+
+  while (( token = strsep(&pch, s) )){
     ISAXELEM* isaxelem = (ISAXELEM*) palloc(sizeof(ISAXELEM));
 
-    token = strtok(token, end);
     read_isex_elem(token, isaxelem);
     result->elements[i] = *isaxelem;
     i++;
