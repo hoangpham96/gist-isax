@@ -31,9 +31,6 @@ RETURNS real
 AS 'MODULE_PATHNAME'
 LANGUAGE C STRICT;
 
--- DROP EXTENSION gist_isax CASCADE;
--- CREATE EXTENSION gist_isax;
-
 CREATE OPERATOR % (LEFTARG = anyarray, RIGHTARG = anyarray, PROCEDURE = arrays_similar);
 
 --

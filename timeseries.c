@@ -315,7 +315,6 @@ paa_to_isax(PG_FUNCTION_ARGS)
       card = 256;
   float4* val;
   ArrayType* paa = (ArrayType*) PG_GETARG_ARRAYTYPE_P(0);
-  //TODO: what should I allocate for buffer size
   char* buffer;
   char* result = palloc(l*sizeof(char));
 

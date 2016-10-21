@@ -7,8 +7,6 @@
  * GiST functions to be implemented
  */
 
-//TODO: replace all 256 with 255 bc unsigned char only goes from 0 to 255
-//TODO: replace data_type with ArrayType and compressed_data_type with ISAXWORD
 static float saxbp[] ={  -2.66006747, -2.41755902, -2.26622681, -2.15387469, -2.06352790, -1.98742789, -1.92135077, -1.86273187, -1.80989224, -1.76167041, -1.71722812, -1.67593972, -1.63732538, -1.60100866, -1.56668859, -1.53412054, -1.50310294, -1.47346758, -1.44507258, -1.41779714, -1.39153749, -1.36620382, -1.34171784, -1.31801090, -1.29502241, -1.27269864, -1.25099172, -1.22985876, -1.20926123, -1.18916435, -1.16953661, -1.15034938, -1.13157656, -1.11319428, -1.09518065, -1.07751557, -1.06018048, -1.04315826, -1.02643306, -1.00999017, -0.99381591, -0.97789754, -0.96222320, -0.94678176, -0.93156283, -0.91655667, -0.90175411, -0.88714656, -0.87272589, -0.85848447, -0.84441508, -0.83051088, -0.81676542, -0.80317257, -0.78972652, -0.77642176, -0.76325304, -0.75021538, -0.73730400, -0.72451438, -0.71184220, -0.69928330, -0.68683375, -0.67448975, -0.66224768, -0.65010407, -0.63805558, -0.62609901, -0.61423129, -0.60244945, -0.59075066, -0.57913216, -0.56759132, -0.55612559, -0.54473251, -0.53340971, -0.52215488, -0.51096581, -0.49984034, -0.48877641, -0.47777199, -0.46682512, -0.45593392, -0.44509652, -0.43431116, -0.42357608, -0.41288960, -0.40225007, -0.39165587, -0.38110545, -0.37059729, -0.36012989, -0.34970180, -0.33931161, -0.32895791, -0.31863936, -0.30835463, -0.29810241, -0.28788143, -0.27769044, -0.26752821, -0.25739353, -0.24728522, -0.23720211, -0.22714306, -0.21710695, -0.20709265, -0.19709908, -0.18712516, -0.17716982, -0.16723201, -0.15731068, -0.14740482, -0.13751340, -0.12763542, -0.11776987, -0.10791578, -0.09807215, -0.08823802, -0.07841241, -0.06859437, -0.05878294, -0.04897716, -0.03917609, -0.02937878, -0.01958429, -0.00979167,  0.00000000,  0.00979167,  0.01958429,  0.02937878,  0.03917609,  0.04897716,  0.05878294,  0.06859437,  0.07841241,  0.08823802,  0.09807215,  0.10791578,  0.11776987,  0.12763542,  0.13751340,  0.14740482,  0.15731068,  0.16723201,  0.17716982,  0.18712516,  0.19709908,  0.20709265,  0.21710695,  0.22714306,  0.23720211,  0.24728522,  0.25739353,  0.26752821,  0.27769044,  0.28788143,  0.29810241,  0.30835463,  0.31863936,  0.32895791,  0.33931161,  0.34970180,  0.36012989,  0.37059729,  0.38110545,  0.39165587,  0.40225007,  0.41288960,  0.42357608,  0.43431116,  0.44509652,  0.45593392,  0.46682512,  0.47777199,  0.48877641,  0.49984034,  0.51096581,  0.52215488,  0.53340971,  0.54473251,  0.55612559,  0.56759132,  0.57913216,  0.59075066,  0.60244945,  0.61423129,  0.62609901,  0.63805558,  0.65010407,  0.66224768,  0.67448975,  0.68683375,  0.69928330,  0.71184220,  0.72451438,  0.73730400,  0.75021538,  0.76325304,  0.77642176,  0.78972652,  0.80317257,  0.81676542,  0.83051088,  0.84441508,  0.85848447,  0.87272589,  0.88714656,  0.90175411,  0.91655667,  0.93156283,  0.94678176,  0.96222320,  0.97789754,  0.99381591,  1.00999017,  1.02643306,  1.04315826,  1.06018048,  1.07751557,  1.09518065,  1.11319428,  1.13157656,  1.15034938,  1.16953661,  1.18916435,  1.20926123,  1.22985876,  1.25099172,  1.27269864,  1.29502241,  1.31801090,  1.34171784,  1.36620382,  1.39153749,  1.41779714,  1.44507258,  1.47346758,  1.50310294,  1.53412054,  1.56668859,  1.60100866,  1.63732538,  1.67593972,  1.71722812,  1.76167041,  1.80989224,  1.86273187,  1.92135077,  1.98742789,  2.06352790,  2.15387469,  2.26622681,  2.41755902,  2.66006747, 100.0};
 
 
@@ -52,7 +50,7 @@ gist_isax_consistent(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(retval);
 }
 
-//TODO: wtf ???
+//TODO: explain
 PG_FUNCTION_INFO_V1(gist_isax_union);
 
 Datum
@@ -145,7 +143,7 @@ gist_isax_penalty(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(penalty);
 }
 
-//TODO: wtf ????
+//TODO: explain
 PG_FUNCTION_INFO_V1(gist_isax_picksplit);
 
 Datum
@@ -158,11 +156,21 @@ gist_isax_picksplit(PG_FUNCTION_ARGS)
 	int         i,
 	nbytes;
 	OffsetNumber *left,
-	*right;
-	data_type  *tmp_union;
-	data_type  *unionL;
-	data_type  *unionR;
+							 *right;
+	ISAXWORD  *tmp_union;
+	ISAXWORD  *unionL;
+	ISAXWORD  *unionR;
 	GISTENTRY **raw_entryvec;
+	int c_plus[w];
+	int bp_plus[w];
+	int bp_minus[w];
+
+	//Initialize
+ 	for (i = 0; i < w; i++){
+		c_plus[i] = 256;
+		bp_plus[i] = 0;
+		bp_minus[i] = 255;
+	}
 
 	maxoff = entryvec->n - 1;
 	nbytes = (maxoff + 1) * sizeof(OffsetNumber);
@@ -185,8 +193,11 @@ gist_isax_picksplit(PG_FUNCTION_ARGS)
 
 	for (i = FirstOffsetNumber; i <= maxoff; i = OffsetNumberNext(i))
 	{
-		int         real_index = raw_entryvec[i] - entryvec->vector;
+		int real_index = raw_entryvec[i] - entryvec->vector,
+				j;
 
+
+		//TODO: Is tmp_union e in E  or iSAX key of e ?
 		tmp_union = DatumGetDataType(entryvec->vector[real_index].key);
 		Assert(tmp_union != NULL);
 
@@ -195,6 +206,17 @@ gist_isax_picksplit(PG_FUNCTION_ARGS)
 		 * accordingly. Append the entries to either v_spl_left or
 		 * v_spl_right, and care about the counters.
 		 */
+
+		 for(j = 0; j < w; j+=1){
+			 int c = 1 << ((int) tmp_union->elements[j-1].validbits);
+			 int bp = (int) tmp_union->elements[j-1].value;
+			 c_plus[j] = c_plus[j] < c ? c_plus[j] : c; //min(c_plus, c)
+			 //TODO: Reduce ?
+			 bp_plus[j] =
+			 bp_minus[j] =
+			 bp_plus[j] = bp_plus[j] > bp ? bp_plus[j] : bp; //max(bp_plus, bp)
+			 bp_minus[j] = bp_minus[j] < bp ? bp_minus[j] : bp; //min(bp_plus, bp)
+		 }
 
 		if (gist_isax_choice_is_left(unionL, curl, unionR, curr))
 		{
@@ -209,9 +231,14 @@ gist_isax_picksplit(PG_FUNCTION_ARGS)
 		}
 		else
 		{
-			/*
-			 * Same on the right
-			 */
+			if (unionR == NULL)
+				unionR = tmp_union;
+			else
+				unionR = gist_isax_union_implementation(unionR, tmp_union);
+
+			*right = real_index;
+			++right;
+			++(v->spl_nright);
 		}
 	}
 
@@ -220,6 +247,7 @@ gist_isax_picksplit(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(v);
 }
 
+//TODO: do I need to change same and distance ?
 PG_FUNCTION_INFO_V1(gist_isax_same);
 
 Datum
@@ -362,7 +390,7 @@ mindist_paa_isax(ISAXWORD* entry, ArrayType* key){
 
 ISAXWORD*
 gist_isax_union_implementation(ISAXWORD* left,ISAXWORD* right){
-	int i;
+	int i, j;
 	int bp_plus[w],
 			bp_minus[w],
 	ISAXWORD* result = palloc(sizeof(ISAXWORD));
@@ -390,11 +418,30 @@ gist_isax_union_implementation(ISAXWORD* left,ISAXWORD* right){
 
 	//Getting result
 	for (i = 0; i < w; i+=1){
-		int v = bp_minus[i];
-		int n =
+		int v,
+				tmp_plus = bp_plus[i],
+				tmp_minus = bp_minus[i],
+		 		n,
+				done = 0;
 		ISAXELEM* isaxelem;
-		isaxelem->value = v;
-		isaxelem->validbits = n;
+
+		while(done == 0){
+			if (tmp_plus == tmp_minus){
+				done = 1;
+			}
+			else{
+				tmp_plus >> 1;
+				tmp_minus >> 1
+			}
+		}
+
+		while(tmp_plus != 0){
+			tmp_plus>>1;
+			++n;
+		}
+		//TODO: what is v ?
+		isaxelem->value = (unsigned char)v;
+		isaxelem->validbits = (unsigned char)n;
 		result->elements[i] = isaxelem;
 	}
 	return(result);
