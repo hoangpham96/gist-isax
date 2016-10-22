@@ -12,7 +12,6 @@ AS 'MODULE_PATHNAME'
 LANGUAGE C STRICT;
 
 -- Beginning of test functions
-
 CREATE FUNCTION ts_to_paa(anyarray)
 RETURNS anyarray
 AS 'MODULE_PATHNAME'
@@ -105,50 +104,50 @@ CREATE CAST (isaxelem[] AS isax) WITH FUNCTION isax(isaxelem[]);
 -- GiST functions
 --
 
-  CREATE OR REPLACE FUNCTION gist_isax_consistent(internal, text, smallint, oid, internal)
-  RETURNS bool
-  AS 'MODULE_PATHNAME'
-  LANGUAGE C STRICT;
+CREATE OR REPLACE FUNCTION gist_isax_consistent(internal, text, smallint, oid, internal)
+RETURNS bool
+AS 'MODULE_PATHNAME'
+LANGUAGE C STRICT;
 
-  CREATE OR REPLACE FUNCTION gist_isax_union(internal, internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME'
-  LANGUAGE C STRICT;
+CREATE OR REPLACE FUNCTION gist_isax_union(internal, internal)
+RETURNS internal
+AS 'MODULE_PATHNAME'
+LANGUAGE C STRICT;
 
-  CREATE OR REPLACE FUNCTION gist_isax_compress(internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME'
-  LANGUAGE C STRICT;
+CREATE OR REPLACE FUNCTION gist_isax_compress(internal)
+RETURNS internal
+AS 'MODULE_PATHNAME'
+LANGUAGE C STRICT;
 
-  CREATE OR REPLACE FUNCTION gist_isax_decompress(internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME'
-  LANGUAGE C STRICT;
+CREATE OR REPLACE FUNCTION gist_isax_decompress(internal)
+RETURNS internal
+AS 'MODULE_PATHNAME'
+LANGUAGE C STRICT;
 
-  CREATE OR REPLACE FUNCTION gist_isax_penalty(internal, internal, internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME'
-  LANGUAGE C STRICT;
+CREATE OR REPLACE FUNCTION gist_isax_penalty(internal, internal, internal)
+RETURNS internal
+AS 'MODULE_PATHNAME'
+LANGUAGE C STRICT;
 
-  CREATE OR REPLACE FUNCTION gist_isax_picksplit(internal, internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME'
-  LANGUAGE C STRICT;
+CREATE OR REPLACE FUNCTION gist_isax_picksplit(internal, internal)
+RETURNS internal
+AS 'MODULE_PATHNAME'
+LANGUAGE C STRICT;
 
-  CREATE OR REPLACE FUNCTION gist_isax_same(isax, isax, internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME'
-  LANGUAGE C STRICT;
+CREATE OR REPLACE FUNCTION gist_isax_same(isax, isax, internal)
+RETURNS internal
+AS 'MODULE_PATHNAME'
+LANGUAGE C STRICT;
 
-  CREATE OPERATOR CLASS gist_isax_ops
-  FOR TYPE anyarray USING gist
-  AS
-         OPERATOR        1       % (anyarray, anyarray),
-         FUNCTION        1       gist_isax_consistent(internal, text, smallint, oid, internal),
-         FUNCTION        2       gist_isax_union (internal, internal),
-         FUNCTION        3       gist_isax_compress (internal),
-         FUNCTION        4       gist_isax_decompress (internal),
-         FUNCTION        5       gist_isax_penalty (internal, internal, internal),
-         FUNCTION        6       gist_isax_picksplit (internal, internal),
-         FUNCTION        7       gist_isax_same (isax, isax, internal),
-  STORAGE isax;
+CREATE OPERATOR CLASS gist_isax_ops
+FOR TYPE anyarray USING gist
+AS
+       OPERATOR        1       % (anyarray, anyarray),
+       FUNCTION        1       gist_isax_consistent(internal, text, smallint, oid, internal),
+       FUNCTION        2       gist_isax_union (internal, internal),
+       FUNCTION        3       gist_isax_compress (internal),
+       FUNCTION        4       gist_isax_decompress (internal),
+       FUNCTION        5       gist_isax_penalty (internal, internal, internal),
+       FUNCTION        6       gist_isax_picksplit (internal, internal),
+       FUNCTION        7       gist_isax_same (isax, isax, internal),
+STORAGE isax;
